@@ -4339,6 +4339,7 @@ export default function TrafficInspectorModule({ user, onLogout }) {
                         if (status === "Exam Taken") return { bg: "#dcfce7", color: "#166534" };
                         if (status === "Submitted") return { bg: "#dbeafe", color: "#2563eb" };
                         if (status === "Rejected") return { bg: "#fee2e2", color: "#dc2626" };
+                        if (status === "Pending First Assessment") return { bg: "#dbeafe", color: "#2563eb" };
                         return { bg: "#f1f5f9", color: "#475569" };
                       };
 
@@ -4383,7 +4384,7 @@ export default function TrafficInspectorModule({ user, onLogout }) {
                           </td>
                           <td style={{ padding: "14px 16px", textAlign: "right" }}>
                             <div style={{ display: "flex", gap: "8px", alignItems: "center", justifyContent: "flex-end" }}>
-                              {config.sendAccess && (item.status === "Pending" || item.status === "Exam Locked") && (
+                              {config.sendAccess && (item.status === "Pending" || item.status === "Exam Locked" || item.status === "Pending First Assessment") && (
                                 <button
                                   onClick={() => config.sendAccess(item.id)}
                                   style={{
