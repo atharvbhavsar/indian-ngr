@@ -238,7 +238,7 @@ function StationMasterModule({ user, onLogout }) {
     selectedCategory, setSelectedCategory,
     searchHrms, setSearchHrms,
     selectedHrmsIds, setSelectedHrmsIds,
-    sendBatchAssessmentAccess,
+    sendBatchAssessmentAccess, deactivateAssessmentAccess,
     allDbAssessments,
     updateEmployeeSchedule
   } = state;
@@ -362,6 +362,7 @@ function StationMasterModule({ user, onLogout }) {
       setAssessForm={setAssessForm}
       assessLocked={assessLocked}
       setPageMode={setPageMode}
+      activatedTests={activatedTests}
       setActivatedTests={setActivatedTests}
       toggleYN={toggleYN}
       computeScore={computeScore}
@@ -379,6 +380,7 @@ function StationMasterModule({ user, onLogout }) {
       selectedHrmsIds={selectedHrmsIds}
       setSelectedHrmsIds={setSelectedHrmsIds}
       sendBatchAssessmentAccess={sendBatchAssessmentAccess}
+      deactivateAssessmentAccess={deactivateAssessmentAccess}
       user={user}
       allDbAssessments={allDbAssessments}
       updateEmployeeSchedule={updateEmployeeSchedule}

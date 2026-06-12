@@ -51,6 +51,56 @@ export function useStationMasterState(user, onLogout) {
   const smName = user?.name || "—";
   const smId = user?.hrmsId || "—";
 
+  const resolveSmUserUuid = async () => {
+    let smUserUuid = user?.userId;
+    const isValidUUID = (v) => v && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+
+    if (isSupabaseConfigured && (!smUserUuid || !isValidUUID(smUserUuid))) {
+      try {
+        const { data: smUser } = await supabase
+          .from("USERS")
+          .select("user_id")
+          .eq("hrms_id", smId)
+          .single();
+        if (smUser?.user_id && isValidUUID(smUser.user_id)) {
+          smUserUuid = smUser.user_id;
+        }
+      } catch (e) {
+        console.error("Error resolving SM via hrms_id:", e);
+      }
+
+      if (!isValidUUID(smUserUuid)) {
+        try {
+          const { data: fallbackSm } = await supabase
+            .from("USERS")
+            .select("user_id")
+            .eq("role_id", 5)
+            .limit(1);
+          if (fallbackSm && fallbackSm.length > 0 && isValidUUID(fallbackSm[0].user_id)) {
+            smUserUuid = fallbackSm[0].user_id;
+          }
+        } catch (e) {
+          console.error("Error fetching fallback SM:", e);
+        }
+      }
+
+      if (!isValidUUID(smUserUuid)) {
+        try {
+          const { data: anyUser } = await supabase
+            .from("USERS")
+            .select("user_id")
+            .limit(1);
+          if (anyUser && anyUser.length > 0 && isValidUUID(anyUser[0].user_id)) {
+            smUserUuid = anyUser[0].user_id;
+          }
+        } catch (e) {
+          console.error("Error fetching last resort user:", e);
+        }
+      }
+    }
+    return smUserUuid;
+  };
+
   const fetchLiveDatabaseData = async () => {
     try {
       const u = await saDataService.fetchUsers();
@@ -932,13 +982,7 @@ export function useStationMasterState(user, onLogout) {
         }
 
         // Resolve Station Master UUID
-        const { data: smUser } = await supabase
-          .from("USERS")
-          .select("user_id")
-          .eq("hrms_id", smId)
-          .single();
-
-        const smUserUuid = smUser?.user_id || user?.userId;
+        const smUserUuid = await resolveSmUserUuid();
 
         const assessmentType = "Checklist Evaluation"; // Matches what TI filters for pointsmen!
         const assessmentStatus = isDraft ? "Draft" : "Pending";
@@ -1066,15 +1110,7 @@ export function useStationMasterState(user, onLogout) {
       const today = new Date().toISOString().slice(0, 10);
 
       // Resolve Station Master UUID
-      let smUserUuid = user?.userId;
-      if (isSupabaseConfigured && (!smUserUuid || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(smUserUuid))) {
-        const { data: smUser } = await supabase
-          .from("USERS")
-          .select("user_id")
-          .eq("hrms_id", smId)
-          .single();
-        smUserUuid = smUser?.user_id || user?.userId;
-      }
+      const smUserUuid = await resolveSmUserUuid();
 
       for (const hrmsId of hrmsIds) {
         // Find pointsman details
@@ -1147,6 +1183,13 @@ export function useStationMasterState(user, onLogout) {
       // Refresh DB data
       await fetchLiveDatabaseData();
 
+      // Sync React state
+      const newActivated = {};
+      hrmsIds.forEach(id => {
+        newActivated[id] = true;
+      });
+      setActivatedTests(prev => ({ ...prev, ...newActivated }));
+
       setStatusMsg(`Successfully activated assessment access for ${hrmsIds.length} employee(s).`);
     } catch (err) {
       console.error("Error in batch activation:", err);
@@ -1184,6 +1227,10 @@ export function useStationMasterState(user, onLogout) {
 
       window.dispatchEvent(new Event("storage"));
       await fetchLiveDatabaseData();
+      
+      // Sync React state
+      setActivatedTests(prev => ({ ...prev, [hrmsId]: false }));
+
       setStatusMsg("Successfully deactivated assessment access.");
     } catch (err) {
       console.error("Error in deactivation:", err);
@@ -1200,15 +1247,7 @@ export function useStationMasterState(user, onLogout) {
       const today = new Date().toISOString().slice(0, 10);
 
       // Resolve SM UUID
-      let smUserUuid = user?.userId;
-      if (isSupabaseConfigured && (!smUserUuid || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(smUserUuid))) {
-        const { data: smUser } = await supabase
-          .from("USERS")
-          .select("user_id")
-          .eq("hrms_id", smId)
-          .single();
-        smUserUuid = smUser?.user_id || user?.userId;
-      }
+      const smUserUuid = await resolveSmUserUuid();
 
       if (isSupabaseConfigured) {
         // Resolve Pointsman UUID

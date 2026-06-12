@@ -6148,6 +6148,7 @@ export function useAomState(user, onLogout) {
           const mcqScore = parsedAnswers.mcqScore !== undefined ? parsedAnswers.mcqScore : (parsedAnswers.knowledgeMarks !== undefined ? parsedAnswers.knowledgeMarks : 0);
           const isAlc = parsedAnswers.alcoholicStatus === "Alcoholic";
           const cat = isAlc ? "D" : (a.TEST_ATTEMPT?.[0]?.category || "A");
+          const isOnlineExam = a.TEST_ATTEMPT?.[0]?.total_marks === 25;
 
           let sections = [];
           if (storedSections.length > 0) {
@@ -6169,15 +6170,35 @@ export function useAomState(user, onLogout) {
               });
             }
           } else {
-            // Fallback proportional
-            sections = [
-              { title: "Knowledge of Rules (MCQ)", score: Math.round(score * 0.25), max: 25, marks: Math.round(score * 0.25), outOf: 25 },
-              { title: "Alertness and Observation of Rules", score: Math.round(score * 0.25), max: 25, marks: Math.round(score * 0.25), outOf: 25 },
-              { title: "Safety Record", score: Math.round(score * 0.15), max: 15, marks: Math.round(score * 0.15), outOf: 15 },
-              { title: "Leadership and Management", score: Math.round(score * 0.15), max: 15, marks: Math.round(score * 0.15), outOf: 15 },
-              { title: "Discipline", score: Math.round(score * 0.10), max: 10, marks: Math.round(score * 0.10), outOf: 10 },
-              { title: "Appearance and Neatness", score: Math.round(score * 0.10), max: 10, marks: Math.round(score * 0.10), outOf: 10 }
-            ];
+            // Proportional fallback if it's a raw MCQ attempt or missing checklist data
+            const isRawAttempt = Array.isArray(parsedAnswers) || (!parsedAnswers.alertness && !parsedAnswers.sections);
+            if (isRawAttempt && a.TEST_ATTEMPT?.[0]?.total_marks !== 25 && score > 0) {
+              const s1 = Math.round(score * 0.25);
+              const s2 = Math.round(score * 0.25);
+              const s3 = Math.round(score * 0.15);
+              const s4 = Math.round(score * 0.15);
+              const s5 = Math.round(score * 0.10);
+              const s6 = Math.max(0, score - (s1 + s2 + s3 + s4 + s5));
+
+              sections = [
+                { title: "Knowledge of Rules (MCQ)", score: s1, max: 25, marks: s1, outOf: 25 },
+                { title: "Alertness and Observation of Rules", score: s2, max: 25, marks: s2, outOf: 25 },
+                { title: "Safety Record", score: s3, max: 15, marks: s3, outOf: 15 },
+                { title: "Leadership and Management", score: s4, max: 15, marks: s4, outOf: 15 },
+                { title: "Discipline", score: s5, max: 10, marks: s5, outOf: 10 },
+                { title: "Appearance and Neatness", score: s6, max: 10, marks: s6, outOf: 10 }
+              ];
+            } else {
+              // Fallback proportional
+              sections = [
+                { title: "Knowledge of Rules (MCQ)", score: Math.round(score * 0.25), max: 25, marks: Math.round(score * 0.25), outOf: 25 },
+                { title: "Alertness and Observation of Rules", score: Math.round(score * 0.25), max: 25, marks: Math.round(score * 0.25), outOf: 25 },
+                { title: "Safety Record", score: Math.round(score * 0.15), max: 15, marks: Math.round(score * 0.15), outOf: 15 },
+                { title: "Leadership and Management", score: Math.round(score * 0.15), max: 15, marks: Math.round(score * 0.15), outOf: 15 },
+                { title: "Discipline", score: Math.round(score * 0.10), max: 10, marks: Math.round(score * 0.10), outOf: 10 },
+                { title: "Appearance and Neatness", score: Math.round(score * 0.10), max: 10, marks: Math.round(score * 0.10), outOf: 10 }
+              ];
+            }
           }
 
           return {
@@ -6189,7 +6210,7 @@ export function useAomState(user, onLogout) {
             status: a.status === 'Pending' ? 'Submitted' : a.status,
             score: score,
             category: cat,
-            isOnlineExam: Array.isArray(answers) || a.TEST_ATTEMPT?.[0]?.total_marks === 25,
+            isOnlineExam: isOnlineExam,
             pmeStatus: parsedAnswers.pmeStatus || "Fit",
             refStatus: parsedAnswers.refStatus || "Cleared",
             remarks: parsedAnswers.remarks || "",
@@ -6221,7 +6242,7 @@ export function useAomState(user, onLogout) {
             try { parsedAnswers = JSON.parse(parsedAnswers); } catch (e) { }
           }
 
-          const isOnlineExam = Array.isArray(parsedAnswers) || a.TEST_ATTEMPT?.[0]?.total_marks === 25 || (parsedAnswers && !parsedAnswers.trainSafety && !parsedAnswers.alcoholicStatus);
+          const isOnlineExam = a.TEST_ATTEMPT?.[0]?.total_marks === 25;
           const isAlc = parsedAnswers.alcoholicStatus === "Alcoholic";
           const cat = isAlc ? "D" : (a.TEST_ATTEMPT?.[0]?.category || "A");
 
@@ -6255,22 +6276,49 @@ export function useAomState(user, onLogout) {
               { title: "Operational Judgement", score: s5, max: 5, marks: s5, outOf: 5 }
             ];
           } else {
-            // Compute YN Yes counts
-            const countYes = arr => (arr || []).filter(v => v === "Yes").length;
-            const s1 = countYes(parsedAnswers.trainSafety) * 3;
-            const s2 = countYes(parsedAnswers.signaling) * 3;
-            const s3 = countYes(parsedAnswers.shunting) * 3;
-            const s4 = countYes(parsedAnswers.documentation) * 3;
-            const s5 = countYes(parsedAnswers.emergency) * 3;
-            const mcqScore = Math.min(parseInt(parsedAnswers.knowledgeMarks || parsedAnswers.mcqScore) || 0, 25);
-            sections = [
-              { title: "Train Safety & Brake Inspection", score: s1, max: 15, marks: s1, outOf: 15 },
-              { title: "Signaling & Whistle Compliance", score: s2, max: 15, marks: s2, outOf: 15 },
-              { title: "Shunting & Coupling Ops", score: s3, max: 15, marks: s3, outOf: 15 },
-              { title: "Train Log & Guard Certificates", score: s4, max: 15, marks: s4, outOf: 15 },
-              { title: "Emergency Train Protection", score: s5, max: 15, marks: s5, outOf: 15 },
-              { title: "Written Exam (Knowledge)", score: mcqScore, max: 25, marks: mcqScore, outOf: 25 }
-            ];
+            // Proportional fallback if it's a raw MCQ attempt or missing checklist data
+            const isRawAttempt = Array.isArray(parsedAnswers) || (!parsedAnswers.trainSafety && !parsedAnswers.sections);
+            const mcqScore = Math.min(
+              parseInt(parsedAnswers.knowledgeMarks || parsedAnswers.mcqScore) ||
+              (a.TEST_ATTEMPT?.[0]?.total_marks === 25 ? score : Math.round(score * 0.25)) ||
+              0,
+              25
+            );
+
+            if (isRawAttempt && a.TEST_ATTEMPT?.[0]?.total_marks !== 25 && score > 0) {
+              const s1 = Math.round(score * 0.15);
+              const s2 = Math.round(score * 0.15);
+              const s3 = Math.round(score * 0.15);
+              const s4 = Math.round(score * 0.15);
+              const s5 = Math.round(score * 0.15);
+              const s6 = Math.max(0, score - (s1 + s2 + s3 + s4 + s5));
+
+              sections = [
+                { title: "Train Safety & Brake Inspection", score: s1, max: 15, marks: s1, outOf: 15 },
+                { title: "Signaling & Whistle Compliance", score: s2, max: 15, marks: s2, outOf: 15 },
+                { title: "Shunting & Coupling Ops", score: s3, max: 15, marks: s3, outOf: 15 },
+                { title: "Train Log & Guard Certificates", score: s4, max: 15, marks: s4, outOf: 15 },
+                { title: "Emergency Train Protection", score: s5, max: 15, marks: s5, outOf: 15 },
+                { title: "Written Exam (Knowledge)", score: s6, max: 25, marks: s6, outOf: 25 }
+              ];
+            } else {
+              // Compute YN Yes counts
+              const countYes = arr => (arr || []).filter(v => v === "Yes").length;
+              const s1 = countYes(parsedAnswers.trainSafety) * 3;
+              const s2 = countYes(parsedAnswers.signaling) * 3;
+              const s3 = countYes(parsedAnswers.shunting) * 3;
+              const s4 = countYes(parsedAnswers.documentation) * 3;
+              const s5 = countYes(parsedAnswers.emergency) * 3;
+
+              sections = [
+                { title: "Train Safety & Brake Inspection", score: s1, max: 15, marks: s1, outOf: 15 },
+                { title: "Signaling & Whistle Compliance", score: s2, max: 15, marks: s2, outOf: 15 },
+                { title: "Shunting & Coupling Ops", score: s3, max: 15, marks: s3, outOf: 15 },
+                { title: "Train Log & Guard Certificates", score: s4, max: 15, marks: s4, outOf: 15 },
+                { title: "Emergency Train Protection", score: s5, max: 15, marks: s5, outOf: 15 },
+                { title: "Written Exam (Knowledge)", score: mcqScore, max: 25, marks: mcqScore, outOf: 25 }
+              ];
+            }
           }
 
           return {
@@ -6315,6 +6363,7 @@ export function useAomState(user, onLogout) {
 
           const isAlc = parsedAnswers.alcoholicStatus === "Alcoholic";
           const cat = isAlc ? "D" : (a.TEST_ATTEMPT?.[0]?.category || "A");
+          const isOnlineExam = a.TEST_ATTEMPT?.[0]?.total_marks === 25;
 
           let sections = [];
           if (parsedAnswers && parsedAnswers.sections && parsedAnswers.sections.length > 0) {
@@ -6326,24 +6375,50 @@ export function useAomState(user, onLogout) {
               outOf: s.outOf !== undefined ? s.outOf : (s.max || 0)
             }));
           } else {
-            // Compute YN Yes counts
-            const countYes = arr => (arr || []).filter(v => v === "Yes").length;
+            // Proportional fallback if it's a raw MCQ attempt or missing checklist data
+            const isRawAttempt = Array.isArray(parsedAnswers) || (!parsedAnswers.stationOps && !parsedAnswers.sections);
+            const mcqScore = Math.min(
+              parseInt(parsedAnswers.knowledgeMarks || parsedAnswers.mcqScore) ||
+              (a.TEST_ATTEMPT?.[0]?.total_marks === 25 ? score : Math.round(score * 0.25)) ||
+              0,
+              25
+            );
 
-            const s1 = countYes(parsedAnswers.stationOps) * 5;
-            const s2 = countYes(parsedAnswers.staffMgmt) * 4;
-            const s3 = countYes(parsedAnswers.records) * 3;
-            const s4 = countYes(parsedAnswers.safety) * 5;
-            const s5 = countYes(parsedAnswers.infra) * 3;
-            const mcqScore = Math.min(parseInt(parsedAnswers.knowledgeMarks || parsedAnswers.mcqScore) || 0, 25);
+            if (isRawAttempt && a.TEST_ATTEMPT?.[0]?.total_marks !== 25 && score > 0) {
+              const s1 = Math.round(score * 0.20);
+              const s2 = Math.round(score * 0.16);
+              const s3 = Math.round(score * 0.12);
+              const s4 = Math.round(score * 0.20);
+              const s5 = Math.round(score * 0.12);
+              const s6 = Math.max(0, score - (s1 + s2 + s3 + s4 + s5));
 
-            sections = [
-              { title: "Station Operations & Supervision", score: s1, max: 25, marks: s1, outOf: 25 },
-              { title: "Staff Management & Discipline", score: s2, max: 20, marks: s2, outOf: 20 },
-              { title: "Records & Documentation", score: s3, max: 15, marks: s3, outOf: 15 },
-              { title: "Safety Compliance & Emergency", score: s4, max: 25, marks: s4, outOf: 25 },
-              { title: "Infrastructure & Asset Maintenance", score: s5, max: 15, marks: s5, outOf: 15 },
-              { title: "Written Exam (Knowledge)", score: mcqScore, max: 25, marks: mcqScore, outOf: 25 }
-            ];
+              sections = [
+                { title: "Station Operations & Supervision", score: s1, max: 25, marks: s1, outOf: 25 },
+                { title: "Staff Management & Discipline", score: s2, max: 20, marks: s2, outOf: 20 },
+                { title: "Records & Documentation", score: s3, max: 15, marks: s3, outOf: 15 },
+                { title: "Safety Compliance & Emergency", score: s4, max: 25, marks: s4, outOf: 25 },
+                { title: "Infrastructure & Asset Maintenance", score: s5, max: 15, marks: s5, outOf: 15 },
+                { title: "Written Exam (Knowledge)", score: s6, max: 25, marks: s6, outOf: 25 }
+              ];
+            } else {
+              // Compute YN Yes counts
+              const countYes = arr => (arr || []).filter(v => v === "Yes").length;
+
+              const s1 = countYes(parsedAnswers.stationOps) * 5;
+              const s2 = countYes(parsedAnswers.staffMgmt) * 4;
+              const s3 = countYes(parsedAnswers.records) * 3;
+              const s4 = countYes(parsedAnswers.safety) * 5;
+              const s5 = countYes(parsedAnswers.infra) * 3;
+
+              sections = [
+                { title: "Station Operations & Supervision", score: s1, max: 25, marks: s1, outOf: 25 },
+                { title: "Staff Management & Discipline", score: s2, max: 20, marks: s2, outOf: 20 },
+                { title: "Records & Documentation", score: s3, max: 15, marks: s3, outOf: 15 },
+                { title: "Safety Compliance & Emergency", score: s4, max: 25, marks: s4, outOf: 25 },
+                { title: "Infrastructure & Asset Maintenance", score: s5, max: 15, marks: s5, outOf: 15 },
+                { title: "Written Exam (Knowledge)", score: mcqScore, max: 25, marks: mcqScore, outOf: 25 }
+              ];
+            }
           }
 
           return {
@@ -6355,7 +6430,7 @@ export function useAomState(user, onLogout) {
             status: a.status === 'Pending' ? 'Submitted' : a.status,
             score: score,
             category: cat,
-            isOnlineExam: Array.isArray(answers) || a.TEST_ATTEMPT?.[0]?.total_marks === 25,
+            isOnlineExam: isOnlineExam,
             pmeStatus: parsedAnswers.pmeStatus || "Fit",
             refStatus: parsedAnswers.refStatus || "Cleared",
             remarks: parsedAnswers.remarks || "",

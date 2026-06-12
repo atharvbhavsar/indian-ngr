@@ -54,7 +54,7 @@ BEGIN
         answers = p_answers,
         submitted_at = CURRENT_TIMESTAMP
     WHERE "TEST_ATTEMPT".attempt_id = v_attempt_id;
-    
+
     -- Delete existing answer history if it's an update to prevent duplicates
     DELETE FROM "ANSWER_HISTORY" WHERE "ANSWER_HISTORY".attempt_id = v_attempt_id;
   ELSE

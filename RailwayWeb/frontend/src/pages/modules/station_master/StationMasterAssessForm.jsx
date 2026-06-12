@@ -16,6 +16,7 @@ export function StationMasterAssessForm(props) {
     setAssessForm,
     assessLocked,
     setPageMode,
+    activatedTests,
     setActivatedTests,
     toggleYN,
     computeScore,
@@ -196,11 +197,14 @@ export function StationMasterAssessForm(props) {
   };
 
   if (pageMode === "assessForm" && assessTarget) {
+    const mcqDataStr = localStorage.getItem(`pm_mcq_test_${assessTarget.hrmsId}`);
+    const mcqData = mcqDataStr ? JSON.parse(mcqDataStr) : null;
+
     const dbSubmission = submittedAssessments ? submittedAssessments.find(s => s.pmId === assessTarget.hrmsId) : null;
     const isMcqCompleted = (mcqData && mcqData.completed) || (dbSubmission && ["Submitted", "Approved", "Completed", "EVALUATED"].includes(dbSubmission.status)) || assessTarget.status === "Submitted" || assessTarget.status === "Approved" || assessTarget.status === "Exam Taken";
-    const isActivated = localStorage.getItem(`pm_test_activated_${assessTarget.hrmsId}`) === "true";
+    const isActivated = (activatedTests && activatedTests[assessTarget.hrmsId] === true) || localStorage.getItem(`pm_test_activated_${assessTarget.hrmsId}`) === "true";
 
-    const { knowledge, ynTotal, total: liveTotal } = computeScore(assessForm);
+    const { knowledge, ynScore: ynTotal, total: liveTotal } = computeScore(assessForm);
     const liveCat = assessForm.alcoholicStatus === "Alcoholic" ? "D" : getCat(liveTotal);
 
     return (
@@ -241,11 +245,11 @@ export function StationMasterAssessForm(props) {
                 <div className="sm2-mcq-card-body">
                   <div className="sm2-mcq-score-display">
                     <div className="sm2-mcq-large-score">
-                      <strong>{mcqData.correctCount}</strong>
+                      <strong>{mcqData?.correctCount ?? dbSubmission?.score ?? 0}</strong>
                       <span>/ 25</span>
                     </div>
                     <div className="sm2-mcq-percentage-badge">
-                      {mcqData.correctCount}/25 {t("Score")}
+                      {(mcqData?.correctCount ?? dbSubmission?.score ?? 0)}/25 {t("Score")}
                     </div>
                   </div>
 
@@ -254,8 +258,8 @@ export function StationMasterAssessForm(props) {
                       <div
                         className="sm2-mcq-progress-fill"
                         style={{
-                          width: `${mcqData.percentage}%`,
-                          background: mcqData.percentage >= 80 ? "#16a34a" : mcqData.percentage >= 50 ? "#2563eb" : "#dc2626"
+                          width: `${mcqData?.percentage ?? (dbSubmission?.score ? Math.round((dbSubmission.score / 25) * 100) : 0)}%`,
+                          background: (mcqData?.percentage ?? (dbSubmission?.score ? Math.round((dbSubmission.score / 25) * 100) : 0)) >= 80 ? "#16a34a" : (mcqData?.percentage ?? (dbSubmission?.score ? Math.round((dbSubmission.score / 25) * 100) : 0)) >= 50 ? "#2563eb" : "#dc2626"
                         }}
                       />
                     </div>
@@ -264,7 +268,7 @@ export function StationMasterAssessForm(props) {
                   <div className="sm2-mcq-meta-grid">
                     <div className="sm2-mcq-meta-item">
                       <span className="sm2-mcq-meta-label">{t("Submitted On")}</span>
-                      <strong className="sm2-mcq-meta-val">{mcqData.submittedDate}</strong>
+                      <strong className="sm2-mcq-meta-val">{mcqData?.submittedDate ?? dbSubmission?.date ?? "—"}</strong>
                     </div>
                     <div className="sm2-mcq-meta-item">
                       <span className="sm2-mcq-meta-label">{t("Assessed Entity")}</span>
@@ -590,7 +594,7 @@ export function StationMasterAssessForm(props) {
     const isApproved = dbSubmission && dbSubmission.status === 'Approved';
     const isPending = dbSubmission && dbSubmission.status === 'Pending';
     const isCompleted = mcqData && mcqData.completed;
-    const isActivated = localStorage.getItem(`pm_test_activated_${p.hrmsId}`) === "true";
+    const isActivated = (activatedTests && activatedTests[p.hrmsId] === true) || localStorage.getItem(`pm_test_activated_${p.hrmsId}`) === "true";
 
     if (isApproved) return { text: t("Approved"), type: "success" };
     if (isPending) return { text: t("Pending Approval"), type: "info" };
@@ -1265,8 +1269,8 @@ export function StationMasterAssessForm(props) {
             const isApproved = dbSubmission && dbSubmission.status === 'Approved';
             const isPending = dbSubmission && dbSubmission.status === 'Pending';
 
-            const isCompleted = mcqData && mcqData.completed;
-            const isActivated = localStorage.getItem(`pm_test_activated_${d.hrmsId}`) === "true";
+            const isCompleted = (mcqData && mcqData.completed) || (dbSubmission && ["Submitted", "Approved", "Completed", "EVALUATED"].includes(dbSubmission.status)) || d.status === "Submitted" || d.status === "Approved" || d.status === "Exam Taken";
+            const isActivated = (activatedTests && activatedTests[d.hrmsId] === true) || localStorage.getItem(`pm_test_activated_${d.hrmsId}`) === "true";
 
             return (
               <div key={d.hrmsId} className="sm2-assess-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px", background: "#fff", border: "1px solid #e2e8f0", borderRadius: "10px", marginBottom: "12px" }}>
@@ -1290,7 +1294,7 @@ export function StationMasterAssessForm(props) {
                     </span>
                   ) : isCompleted ? (
                     <span className="sdom-badge sdom-badge-success">
-                      {t("MCQ Completed")} ({mcqData.correctCount}/25)
+                      {t("MCQ Completed")} ({mcqData?.correctCount || dbSubmission?.score || 0}/25)
                     </span>
                   ) : isActivated ? (
                     <span className="sdom-badge sdom-badge-warning">
@@ -1316,11 +1320,11 @@ export function StationMasterAssessForm(props) {
                           background: isActivated ? "#fef2f2" : "#eff6ff",
                           color: isActivated ? "#dc2626" : "#2563eb"
                         }}
-                        onClick={() => {
+                        onClick={async () => {
                           if (isActivated) {
-                            localStorage.setItem(`pm_test_activated_${d.hrmsId}`, "false");
+                            await deactivateAssessmentAccess(d.hrmsId);
                           } else {
-                            localStorage.setItem(`pm_test_activated_${d.hrmsId}`, "true");
+                            await sendBatchAssessmentAccess([d.hrmsId]);
                           }
                           setActivatedTests(prev => ({ ...prev, [d.hrmsId]: !isActivated }));
                         }}

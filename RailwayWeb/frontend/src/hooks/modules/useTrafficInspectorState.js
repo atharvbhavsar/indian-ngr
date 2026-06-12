@@ -231,6 +231,38 @@ export function useTrafficInspectorState(user, onLogout) {
           .map(a => {
             const score = a.TEST_ATTEMPT?.[0]?.obtained_marks || 0;
             const subDate = a.assessment_date ? new Date(a.assessment_date).toISOString().slice(0, 10) : "";
+            
+            const attempt = a.TEST_ATTEMPT?.[0];
+            const answers = attempt?.answers || {};
+            let parsedAnswers = answers;
+            if (typeof parsedAnswers === "string") {
+              try { parsedAnswers = JSON.parse(parsedAnswers); } catch (e) { }
+            }
+
+            const storedSections = parsedAnswers?.sections || [];
+            const mcqScore = parsedAnswers?.knowledgeMarks !== undefined ? parsedAnswers.knowledgeMarks : (parsedAnswers?.mcqScore !== undefined ? parsedAnswers.mcqScore : 0);
+
+            let originalSecs = [];
+            if (storedSections && storedSections.length > 0) {
+              originalSecs = storedSections.map(s => ({
+                title: s.title || s.label || "",
+                score: s.marks !== undefined ? s.marks : (s.score || 0),
+                max: s.outOf !== undefined ? s.outOf : (s.max || 0)
+              }));
+              const hasMcq = originalSecs.some(s => s.title.includes("MCQ") || s.title.includes("Written Exam") || s.title.includes("Knowledge"));
+              if (!hasMcq) {
+                originalSecs.unshift({
+                  title: "Knowledge of Rules",
+                  score: Number(mcqScore) || 0,
+                  max: 25
+                });
+              }
+            } else {
+              originalSecs = constructSections(score, 100, "PM");
+            }
+
+            const finalSecs = a.status === "Approved" ? originalSecs : undefined;
+
             return {
               id: a.assessment_id,
               pointsmanName: a.employee?.full_name || "",
@@ -239,14 +271,24 @@ export function useTrafficInspectorState(user, onLogout) {
               assessingSM: a.conducted_by_user?.full_name || "SM",
               submissionDate: subDate,
               status: a.status === 'Pending' ? 'Pending' : a.status,
-              originalSections: constructSections(score, 100, "PM"),
-              finalSections: a.status === "Approved" ? constructSections(score, 100, "PM") : undefined,
+              originalSections: originalSecs,
+              finalSections: finalSecs,
               finalScore: score,
               category: a.TEST_ATTEMPT?.[0]?.category || getCat(score),
               tiRemarks: a.APPROVAL?.remarks || "",
               tiModified: false,
               approvalDate: a.APPROVAL?.approval_date ? new Date(a.APPROVAL.approval_date).toISOString().slice(0, 10) : "",
-              auditTrail: a.APPROVAL ? [{ action: "Approved", by: a.APPROVAL.USERS?.full_name || "TI", date: new Date(a.APPROVAL.approval_date).toISOString().slice(0, 10), remark: a.APPROVAL.remarks }] : []
+              auditTrail: a.APPROVAL ? [{ action: "Approved", by: a.APPROVAL.USERS?.full_name || "TI", date: new Date(a.APPROVAL.approval_date).toISOString().slice(0, 10), remark: a.APPROVAL.remarks }] : [],
+              meta: {
+                pmeStatus: parsedAnswers?.pmeStatus || "Fit",
+                refStatus: parsedAnswers?.refStatus || "Cleared",
+                alcoholicStatus: parsedAnswers?.alcoholicStatus || "Non-Alcoholic",
+                automaticTraining: parsedAnswers?.automaticTraining || "Not Required",
+                counselling: parsedAnswers?.counselling || "Not Required",
+                dateOfAppointment: parsedAnswers?.dateOfAppointment || "",
+                workingSince: parsedAnswers?.workingSince || "",
+                remarks: parsedAnswers?.remarks || ""
+              }
             };
           });
         setPmList(pmMapped);
@@ -419,7 +461,7 @@ export function useTrafficInspectorState(user, onLogout) {
             let timeStr = "12:00 AM";
             const tMatch = (activeAssess.assessment_type || "").match(/Time:\s*([^\n\r|]+)/i);
             if (tMatch) timeStr = tMatch[1].trim();
-            
+
             let hours = 0;
             let minutes = 0;
             const timeParts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
@@ -436,7 +478,7 @@ export function useTrafficInspectorState(user, onLogout) {
                 minutes = parseInt(parts24[2]);
               }
             }
-            
+
             let year = 2026, month = 5, day = 12;
             if (activeAssess.due_date.includes("-")) {
               const parts = activeAssess.due_date.split("-");
@@ -463,9 +505,23 @@ export function useTrafficInspectorState(user, onLogout) {
           }
         }
 
+        // Find the newest assessment record for this TI (since assessList is ordered by created_at desc)
+        const tiAssessHistory = (assessList || []).filter(a => a.employee_id === effectiveUserId);
+        const newestAssess = tiAssessHistory[0]; // Newest due to order desc
+        const completedOrSubmitted = newestAssess && ["Submitted", "Approved", "Rejected", "Completed"].includes(newestAssess.status);
+
+        if (completedOrSubmitted) {
+          if (localStorage.getItem(`ti_test_activated_${hrmsKey}`) === "true") {
+            localStorage.removeItem(`ti_test_activated_${hrmsKey}`);
+            localStorage.removeItem(`ti_test_activated_time_${hrmsKey}`);
+            localStorage.removeItem(`ti_test_assigned_${hrmsKey}`);
+            window.dispatchEvent(new Event("storage"));
+          }
+        }
+
         const isLocalActive = localStorage.getItem(`ti_test_activated_${hrmsKey}`) === "true";
         const wasExamAssigned = isExamAssignedRef.current;
-        const testIsActive = isDbActive || isLocalActive;
+        const testIsActive = !completedOrSubmitted && (isDbActive || isLocalActive);
         isExamAssignedRef.current = testIsActive;
         setIsExamAssigned(testIsActive);
         if (testIsActive && !wasExamAssigned) {
@@ -786,7 +842,7 @@ export function useTrafficInspectorState(user, onLogout) {
     const pendingCount = myUsers.filter(u => u.status === "Pending" || u.status === "Submitted").length;
     const rejectedCount = myUsers.filter(u => u.status === "Rejected").length;
     const overdueCount = myUsers.filter(u => u.pmeStatus === "Overdue" || u.refStatus === "Expired" || u.status === "Overdue").length;
-    
+
     const pendingFirstCount = myUsers.filter(u => u.status === "Pending First Assessment" || u.totalAssessments === 0).length;
     const notAttemptedCount = myUsers.filter(u => u.totalAssessments === 0).length;
     const dueCount = myUsers.filter(u => u.status === "Pending" || u.status === "Overdue" || u.pmeStatus === "Due" || u.refStatus === "Due").length;
@@ -1377,20 +1433,41 @@ export function useTrafficInspectorState(user, onLogout) {
         const secs = editSections[id] || targetAssess.originalSections;
         const total = secs.reduce((s, x) => s + x.score, 0);
 
-        // Fetch existing attempt to check if SM marked as Category D (Alcoholic)
+        // Fetch existing attempt to check if SM marked as Category D (Alcoholic) and load existing answers
         let finalCat = getCat(total);
+        let existingAnswersObj = {};
         try {
           const { data: existingAttempt } = await supabase
             .from("TEST_ATTEMPT")
-            .select("category")
+            .select("category, answers")
             .eq("assessment_id", id)
             .maybeSingle();
           if (existingAttempt?.category === "D") {
             finalCat = "D";
           }
+          if (existingAttempt?.answers) {
+            existingAnswersObj = typeof existingAttempt.answers === 'string' ? JSON.parse(existingAttempt.answers) : existingAttempt.answers;
+          }
         } catch (catErr) {
-          console.error("Error reading existing attempt category:", catErr);
+          console.error("Error reading existing attempt category/answers:", catErr);
         }
+
+        // Separate MCQ (first element) from other checklist sections
+        const mcqSec = secs.find(s => s.title.includes("MCQ") || s.title.includes("Written Exam") || s.title.includes("Knowledge"));
+        const mcqScore = mcqSec ? mcqSec.score : 0;
+        
+        // Checklist sections map to sections in answers JSON
+        const checklistSecsOnly = secs.filter(s => s !== mcqSec);
+
+        const updatedAnswers = {
+          ...existingAnswersObj,
+          knowledgeMarks: String(mcqScore),
+          sections: checklistSecsOnly.map(s => ({
+            title: s.title,
+            marks: s.score,
+            outOf: s.max
+          }))
+        };
 
         await supabase
           .from("TEST_ATTEMPT")
@@ -1398,7 +1475,8 @@ export function useTrafficInspectorState(user, onLogout) {
             total_marks: 100,
             obtained_marks: total,
             percentage: total,
-            category: finalCat
+            category: finalCat,
+            answers: updatedAnswers
           })
           .eq("assessment_id", id);
 
@@ -2670,7 +2748,7 @@ export function useTrafficInspectorState(user, onLogout) {
         .from("ASSESSMENT")
         .select("assessment_id")
         .eq("employee_id", effectiveId)
-        .in("status", ["Pending", "AVAILABLE"]);
+        .in("status", ["Pending", "AVAILABLE", "LOCKED", "IN_PROGRESS"]);
 
       if (pendingErr) throw pendingErr;
 
@@ -2843,10 +2921,10 @@ export function useTrafficInspectorState(user, onLogout) {
         const empUserUuid = empUser.user_id;
 
         const baseAssessType = role === "SM" ? "Station Master Assessment" :
-                               role === "SS" ? "Station Superintendent Assessment" :
-                               role === "TM" ? "Train Manager Assessment" :
-                               role === "TI" ? "Safety Exam" :
-                               "Safety Exam";
+          role === "SS" ? "Station Superintendent Assessment" :
+            role === "TM" ? "Train Manager Assessment" :
+              role === "TI" ? "Safety Exam" :
+                "Safety Exam";
         const assessmentType = `${baseAssessType} | Time: ${time || "10:00 AM"}`;
 
         // Check if there is an active assessment
