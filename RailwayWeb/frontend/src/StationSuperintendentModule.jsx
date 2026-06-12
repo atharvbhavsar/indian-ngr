@@ -502,37 +502,81 @@ function StationSuperintendentModule({ user, onLogout }) {
         // Fetch active/pending assessments for this user
         const { data: assessments, error } = await supabase
           .from('ASSESSMENT')
-          .select('assessment_id, status, assessment_type, conducted_by')
+          .select('assessment_id, status, assessment_type, conducted_by, due_date')
           .eq('employee_id', resolvedEmployeeId)
-          .in('assessment_type', ['Station Superintendent Assessment', 'SS Assessment'])
           .in('status', ['Pending', 'AVAILABLE', 'LOCKED', 'IN_PROGRESS'])
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .order('created_at', { ascending: false });
 
         const activatedTime = Number(localStorage.getItem(`ss_test_activated_time_${employeeId}`)) || 0;
         const isRecent = Date.now() - activatedTime < 15000; // 15 seconds guard
 
-        if (!error && assessments && assessments.length > 0) {
-          const activeAssess = assessments[0];
-          setDbAssessment(activeAssess);
-          if (activeAssess.status === 'Pending' || activeAssess.status === 'AVAILABLE' || activeAssess.status === 'IN_PROGRESS') {
-            const currentActivated = localStorage.getItem(`ss_test_activated_${employeeId}`);
-            if (currentActivated !== "true") {
-              localStorage.setItem(`ss_test_activated_${employeeId}`, "true");
-              window.dispatchEvent(new Event("storage"));
+        if (!error && assessments) {
+          const ssAssessments = assessments.filter(a => {
+            const t = (a.assessment_type || "").toLowerCase();
+            return t.startsWith("station superintendent") || t.startsWith("ss assessment") || t === "station superintendent assessment";
+          });
+
+          if (ssAssessments.length > 0) {
+            const activeAssess = ssAssessments[0];
+            setDbAssessment(activeAssess);
+            
+            let isActive = ['Pending', 'AVAILABLE', 'IN_PROGRESS'].includes(activeAssess.status);
+            if (!isActive && activeAssess.status === 'LOCKED' && activeAssess.due_date) {
+              let timeStr = "12:00 AM";
+              const tMatch = (activeAssess.assessment_type || "").match(/Time:\s*([^\n\r|]+)/i);
+              if (tMatch) timeStr = tMatch[1].trim();
+              
+              let hours = 0;
+              let minutes = 0;
+              const timeParts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+              if (timeParts) {
+                hours = parseInt(timeParts[1]);
+                minutes = parseInt(timeParts[2]);
+                const ampm = timeParts[3].toUpperCase();
+                if (ampm === "PM" && hours < 12) hours += 12;
+                if (ampm === "AM" && hours === 12) hours = 0;
+              } else {
+                const parts24 = timeStr.match(/(\d+):(\d+)/);
+                if (parts24) {
+                  hours = parseInt(parts24[1]);
+                  minutes = parseInt(parts24[2]);
+                }
+              }
+              
+              let year = 2026, month = 5, day = 12;
+              if (activeAssess.due_date.includes("-")) {
+                const parts = activeAssess.due_date.split("-");
+                if (parts[0].length === 4) {
+                  year = parseInt(parts[0]);
+                  month = parseInt(parts[1]) - 1;
+                  day = parseInt(parts[2]);
+                } else {
+                  day = parseInt(parts[0]);
+                  month = parseInt(parts[1]) - 1;
+                  year = parseInt(parts[2]);
+                }
+              }
+              const targetDate = new Date(year, month, day, hours, minutes, 0);
+              isActive = new Date() >= targetDate;
             }
-          } else {
-            if (!isRecent) {
+
+            if (isActive) {
               const currentActivated = localStorage.getItem(`ss_test_activated_${employeeId}`);
-              if (currentActivated !== "false") {
-                localStorage.setItem(`ss_test_activated_${employeeId}`, "false");
+              if (currentActivated !== "true") {
+                localStorage.setItem(`ss_test_activated_${employeeId}`, "true");
                 window.dispatchEvent(new Event("storage"));
               }
+            } else {
+              if (!isRecent) {
+                const currentActivated = localStorage.getItem(`ss_test_activated_${employeeId}`);
+                if (currentActivated !== "false") {
+                  localStorage.setItem(`ss_test_activated_${employeeId}`, "false");
+                  window.dispatchEvent(new Event("storage"));
+                }
+              }
             }
-          }
-        } else {
-          setDbAssessment(null);
-          if (!error && assessments && assessments.length === 0) {
+          } else {
+            setDbAssessment(null);
             if (!isRecent) {
               const currentActivated = localStorage.getItem(`ss_test_activated_${employeeId}`);
               if (currentActivated !== "false") {
@@ -692,17 +736,22 @@ function StationSuperintendentModule({ user, onLogout }) {
   }, [isAssessmentTimerRunning, assessmentTimeLeft]);
   /* ─── Derived metrics ─── */
   const approvedHistory = useMemo(() => {
-    return history.filter(h => h.approvalStatus === "Approved");
+    return history.filter(h => h.approvalStatus === "Approved" || h.approvalStatus === "Completed");
   }, [history]);
 
-  const latestAttempt = history[0];
-  const latestIsApproved = latestAttempt ? latestAttempt.approvalStatus === "Approved" : false;
-  const latestScore = latestAttempt
-    ? (latestIsApproved ? latestAttempt.totalScore : `${latestAttempt.totalScore}/25`)
-    : null;
-  const latestCategory = latestAttempt
-    ? (latestIsApproved ? (latestAttempt.category || getCategory(latestAttempt.totalScore)) : "Awaiting Grading")
-    : "—";
+  const latestApprovedAttempt = history.find(h => h.approvalStatus === "Approved" || h.approvalStatus === "Completed");
+  const hasUnapproved = history.some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+
+  const latestScore = latestApprovedAttempt
+    ? (latestApprovedAttempt.isOnlineExam
+      ? `${latestApprovedAttempt.totalScore}/25`
+      : `${latestApprovedAttempt.totalScore}/100`)
+    : (hasUnapproved ? "Awaiting Approval" : null);
+
+  const latestCategory = latestApprovedAttempt
+    ? (latestApprovedAttempt.category || getCategory(latestApprovedAttempt.totalScore))
+    : (hasUnapproved ? "Awaiting Approval" : "—");
+
   const averageScore = approvedHistory.length
     ? Math.round(approvedHistory.reduce((s, i) => s + i.totalScore, 0) / approvedHistory.length)
     : 0;
@@ -754,13 +803,16 @@ function StationSuperintendentModule({ user, onLogout }) {
   /* ─── Chart data ─── */
   const trendData = useMemo(() =>
     [...approvedHistory].reverse().map(r => ({
-      date: r.assessmentPeriod.slice(0, 7),
+      date: r.assessmentPeriod ? r.assessmentPeriod.slice(0, 7) : r.date,
       score: r.totalScore
     })), [approvedHistory]);
 
   const pieData = useMemo(() => {
     const counts = { A: 0, B: 0, C: 0, D: 0 };
-    approvedHistory.forEach(r => { counts[getCategory(r.totalScore)]++; });
+    approvedHistory.forEach(r => {
+      const cat = r.category || getCategory(r.totalScore);
+      if (counts[cat] !== undefined) counts[cat]++;
+    });
     const total = approvedHistory.length || 1;
     return Object.entries(counts)
       .filter(([, c]) => c > 0)

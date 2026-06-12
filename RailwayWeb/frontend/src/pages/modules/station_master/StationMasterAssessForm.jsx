@@ -84,7 +84,7 @@ export function StationMasterAssessForm(props) {
     const lastAssessDate = lastAssess ? (lastAssess.assessment_date || lastAssess.created_at?.slice(0, 10)) : (p.lastAssessDate || p.lastDate || p.doj || t("None"));
 
     // 2. Next Due Date & Time
-    const upcomingAssess = empAssessments.find(a => ["LOCKED", "AVAILABLE", "IN_PROGRESS", "Pending"].includes(a.status) && a.due_date);
+    const upcomingAssess = empAssessments.find(a => ["LOCKED", "AVAILABLE", "IN_PROGRESS", "Pending", "Draft", "Scheduled"].includes(a.status) && a.due_date);
 
     let nextDueDate = null;
     let nextDueTime = "10:00 AM";

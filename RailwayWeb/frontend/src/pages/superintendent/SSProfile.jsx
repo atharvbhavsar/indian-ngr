@@ -20,10 +20,13 @@ export default function SSProfile({
 
   // RENDER BODY
 
-  const personalScoreData = [...history].reverse().map(h => ({
-    month: h.assessmentPeriod.replace(" 2026", "").replace(" 2025", ""),
-    score: h.totalScore
-  }));
+  const personalScoreData = [...history]
+    .filter(h => ["Approved", "Completed"].includes(h.approvalStatus))
+    .reverse()
+    .map(h => ({
+      month: h.assessmentPeriod ? h.assessmentPeriod.replace(" 2026", "").replace(" 2025", "") : h.date,
+      score: h.totalScore
+    }));
 
   // Fallbacks to stationSuperintendentProfile fields for offline/local sandbox consistency
   const fallbackDesignation = user.role || stationSuperintendentProfile.designation;
@@ -39,10 +42,11 @@ export default function SSProfile({
   const fallbackRefDue = user.refDueDate || user.refresherDueDate || "2027-04-12";
   const fallbackTraining = user.refStatus || user.trainingStatus || stationSuperintendentProfile.trainingStatus;
 
-  const latestApproved = (history || []).find(h => ["Approved", "Completed", "Submitted", "Pending"].includes(h.approvalStatus));
-  const scoreVal = (user.score !== undefined && user.score !== null && user.score !== 0) ? user.score : (latestApproved?.totalScore || (latestScore && !String(latestScore).includes("—") ? parseInt(latestScore) : null));
-  const computedCategory = latestApproved?.category || (scoreVal ? getCategory(scoreVal) : null);
-  const category = (user.category && user.category !== "Untested") ? user.category : ((user.cat && user.cat !== "Untested") ? user.cat : ((latestCategory && latestCategory !== "—" && latestCategory !== "Untested" && !latestCategory.includes("Awaiting")) ? latestCategory : (computedCategory || null))) || "Untested";
+  const latestApproved = (history || []).find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const hasUnapproved = (history || []).some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+  const scoreVal = latestApproved?.totalScore !== undefined && latestApproved?.totalScore !== null ? latestApproved.totalScore : (hasUnapproved ? null : (user.score || null));
+  const computedCategory = latestApproved?.dbCategory || latestApproved?.category || (scoreVal ? getCategory(scoreVal) : null);
+  const category = latestApproved ? computedCategory : (hasUnapproved ? "Untested" : ((user.category && user.category !== "Untested") ? user.category : ((user.cat && user.cat !== "Untested") ? user.cat : "Untested")));
 
   // Derive risk from category: A/B → Low, C → Medium, D → High
   const riskCategory = history.length > 0 ? category : (user.category || user.cat || "A");
@@ -70,7 +74,7 @@ export default function SSProfile({
                   {t("Pending First Assessment")}
                 </span>
               </>
-            ) : (!category || category.includes("Awaiting")) ? (
+            ) : hasUnapproved ? (
               <span className="sdom-badge sdom-badge-warning">{t("Awaiting Approval")}</span>
             ) : (
               <span className={`sdom-badge ${category === "D" ? "sdom-badge-danger" : category === "C" ? "sdom-badge-warning" : "sdom-badge-success"}`}>
@@ -89,7 +93,7 @@ export default function SSProfile({
         </div>
         <div className="sdom-station-header-stats">
           <div className="sdom-station-header-stat">
-            <span className="val">{history.length > 0 && scoreVal !== null ? `${scoreVal}/100` : t("No Assessment Taken")}</span>
+            <span className="val">{history.length > 0 && scoreVal !== null ? `${scoreVal}/100` : (hasUnapproved ? t("Awaiting Approval") : t("No Assessment Taken"))}</span>
             <span className="lbl">{t("Latest Score")}</span>
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }}/>

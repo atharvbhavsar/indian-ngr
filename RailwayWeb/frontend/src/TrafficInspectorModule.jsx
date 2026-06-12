@@ -403,7 +403,7 @@ export default function TrafficInspectorModule({ user, onLogout }) {
     // Find all assessments for this employee from allDbAssessments
     const empAssessments = allDbAssessments ? allDbAssessments.filter(a => a.employee?.hrms_id === p.hrmsId) : [];
 
-    const baseAssessType = role === "SM" ? "Station Master Assessment" : "Train Manager Assessment";
+    const baseAssessType = role === "SM" ? "Station Master Assessment" : role === "SS" ? "Station Superintendent Assessment" : "Train Manager Assessment";
 
     // 1. Last Assessment Date
     const pastApproved = empAssessments.filter(a => ["Approved", "Completed", "EVALUATED"].includes(a.status));
@@ -965,9 +965,13 @@ export default function TrafficInspectorModule({ user, onLogout }) {
       { month: "May'26", score: 88 }
     ];
 
-    const latestApproved = (tiAssessments || []).find(h => ["Approved", "Completed", "Submitted", "Pending"].includes(h.approvalStatus));
-    const scoreVal = user?.score || latestApproved?.totalScore || avgScoreAll || 0;
-    const categoryVal = user?.category && user?.category !== "Untested" ? user?.category : (user?.cat && user?.cat !== "Untested" ? user?.cat : (latestApproved?.category || (scoreVal ? getCat(scoreVal) : "Untested")));
+    const latestApproved = (tiAssessments || []).find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+    const scoreVal = latestApproved?.totalScore !== undefined && latestApproved?.totalScore !== null
+      ? latestApproved.totalScore
+      : (user?.score || avgScoreAll || 0);
+    const categoryVal = latestApproved?.category && latestApproved?.category !== "Untested"
+      ? latestApproved.category
+      : (user?.category && user?.category !== "Untested" ? user?.category : (user?.cat && user?.cat !== "Untested" ? user?.cat : "Untested"));
 
     // Derive risk from category: A/B → Low, C → Medium, D → High
     const riskVal = categoryVal === "Untested" ? "Untested" : categoryVal === "D" ? "High" : categoryVal === "C" ? "Medium" : "Low";
@@ -2021,8 +2025,10 @@ export default function TrafficInspectorModule({ user, onLogout }) {
     }
 
     const testActive = isExamAssigned;
-    const avgScore = tiAssessments.length
-      ? Math.round(tiAssessments.reduce((s, a) => s + a.totalScore, 0) / tiAssessments.length)
+    const approvedTiAssess = (tiAssessments || []).filter(a => ["Approved", "Completed"].includes(a.approvalStatus));
+    const latestApprovedAssess = approvedTiAssess[0] || null;
+    const avgScore = approvedTiAssess.length
+      ? Math.round(approvedTiAssess.reduce((s, a) => s + a.totalScore, 0) / approvedTiAssess.length)
       : 0;
 
     return (
@@ -2102,7 +2108,7 @@ export default function TrafficInspectorModule({ user, onLogout }) {
             <div style={{ display: "flex", gap: 16, fontSize: 12, textAlign: "right" }}>
               <div>
                 <span style={{ color: "#b91c1c", display: "block" }}>Last Exam Score</span>
-                <strong style={{ color: "#7f1d1d", fontSize: 13 }}>{tiAssessments[0] ? `${tiAssessments[0].totalScore}%` : "N/A"}</strong>
+                <strong style={{ color: "#7f1d1d", fontSize: 13 }}>{latestApprovedAssess ? `${latestApprovedAssess.totalScore}%` : "N/A"}</strong>
               </div>
               <div style={{ borderLeft: "1px solid #fca5a5", paddingLeft: 16 }}>
                 <span style={{ color: "#b91c1c", display: "block" }}>Next Due Date</span>
@@ -2116,26 +2122,32 @@ export default function TrafficInspectorModule({ user, onLogout }) {
         <p className="sm2-subtitle">All assessments conducted by the Area Operation Manager for your section. Click any row to view the detailed scorecard.</p>
 
         {/* Summary strip */}
-        <div className="sm2-myassess-summary">
-          <div className="sm2-report-mini">
-            <label>Total Assessments</label>
-            <strong>{tiAssessments.length}</strong>
-          </div>
-          <div className="sm2-report-mini">
-            <label>Latest Score</label>
-            <strong>{tiAssessments[0] ? `${tiAssessments[0].totalScore}/${tiAssessments[0].totalMarks || (tiAssessments[0].totalScore > 25 ? "100" : "25")}` : "—"}</strong>
-          </div>
-          <div className="sm2-report-mini">
-            <label>Average AOM Score</label>
-            <strong>{avgScore ? `${avgScore}/100` : "—"}</strong>
-          </div>
-          <div className="sm2-report-mini">
-            <label>Latest Assessment</label>
-            <strong style={{ color: (tiAssessments[0]?.category && tiAssessments[0].category !== "Untested") ? (CAT_C[tiAssessments[0].category] || "#2563eb") : "#ea580c" }}>
-              {tiAssessments[0] ? `Category ${tiAssessments[0].category || getCat(tiAssessments[0].totalScore)}` : "—"}
-            </strong>
-          </div>
-        </div>
+        {(() => {
+          const latestApprovedAssess = (tiAssessments || []).find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+          const hasSubmitted = (tiAssessments || []).some(h => h.approvalStatus === "Submitted");
+          return (
+            <div className="sm2-myassess-summary">
+              <div className="sm2-report-mini">
+                <label>Total Assessments</label>
+                <strong>{tiAssessments.length}</strong>
+              </div>
+              <div className="sm2-report-mini">
+                <label>Latest Score</label>
+                <strong>{latestApprovedAssess ? `${latestApprovedAssess.totalScore}/${latestApprovedAssess.totalMarks || (latestApprovedAssess.totalScore > 25 ? "100" : "25")}` : (hasSubmitted ? "Awaiting Approval" : "—")}</strong>
+              </div>
+              <div className="sm2-report-mini">
+                <label>Average AOM Score</label>
+                <strong>{avgScore ? `${avgScore}/100` : "—"}</strong>
+              </div>
+              <div className="sm2-report-mini">
+                <label>Latest Assessment</label>
+                <strong style={{ color: (latestApprovedAssess?.category && latestApprovedAssess.category !== "Untested") ? (CAT_C[latestApprovedAssess.category] || "#2563eb") : "#ea580c" }}>
+                  {latestApprovedAssess ? `Category ${latestApprovedAssess.category || getCat(latestApprovedAssess.totalScore)}` : (hasSubmitted ? "Awaiting Approval" : "—")}
+                </strong>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* List */}
         <div className="sm2-myassess-list">
@@ -2144,15 +2156,16 @@ export default function TrafficInspectorModule({ user, onLogout }) {
               <span key={h}>{h}</span>)}
           </div>
           {tiAssessments.map(sc => {
-            const cat = sc.category;
-            const isApproved = sc.approvalStatus === "Approved";
+            const isApproved = ["Approved", "Completed"].includes(sc.approvalStatus);
+            const cat = isApproved ? sc.category : null;
+            const scoreDisplay = isApproved ? `${sc.totalScore}/${sc.totalMarks || (sc.totalScore > 25 ? "100" : "25")}` : "—";
             return (
               <button key={sc.id} className="sm2-myassess-row" onClick={() => setSelectedRecord(sc)}>
                 <span title={`Cycle: ${sc.period}\nDuration: ${formatQuarterPeriod(sc.period)}`}>
                   <strong>{formatQuarterPeriod(sc.period)}</strong>
                 </span>
                 <span>{sc.date}</span>
-                <span><strong>{sc.totalScore}/{sc.totalMarks || (sc.totalScore > 25 ? "100" : "25")}</strong></span>
+                <span><strong>{scoreDisplay}</strong></span>
                 <span>
                   {cat && cat !== "Untested" ? (
                     <span className="sm2-badge" style={{ background: CAT_B[cat] || "#fee2e2", color: CAT_C[cat] || "#b91c1c" }}>
@@ -5126,14 +5139,11 @@ export default function TrafficInspectorModule({ user, onLogout }) {
     if (assessRole === "SS") return renderRoleRoster("SS");
     if (assessRole === "TM") return renderRoleRoster("TM");
 
-    // ─── LEVEL 1: Role picker Redesign ───
     const smPending = smList.filter(s => s.status === "Pending" || s.status === "Exam Sent").length;
-    const ssPending = ssList.filter(s => s.status === "Pending" || s.status === "Exam Sent").length;
     const tmPending = tmList.filter(t => t.status === "Pending" || t.status === "Exam Sent").length;
 
-    const smCompleted = smList.filter(s => s.status === "Submitted" || s.status === "Exam Taken").length;
-    const ssCompleted = ssList.filter(s => s.status === "Submitted" || s.status === "Exam Taken").length;
-    const tmCompleted = tmList.filter(t => t.status === "Submitted" || t.status === "Exam Taken").length;
+    const smCompleted = smList.filter(s => ["Submitted", "Exam Taken", "Approved", "Completed"].includes(s.status)).length;
+    const tmCompleted = tmList.filter(t => ["Submitted", "Exam Taken", "Approved", "Completed"].includes(t.status)).length;
 
     const roles = [
       {
@@ -5165,8 +5175,8 @@ export default function TrafficInspectorModule({ user, onLogout }) {
           <p style={{ margin: 0, fontSize: "14px", color: "#64748b", fontWeight: "500" }}>Select a staff category to conduct structured competency assessments.</p>
         </div>
 
-        {/* 3 Grid Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px", marginBottom: "24px" }}>
+        {/* Grid Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${roles.length}, 1fr)`, gap: "24px", marginBottom: "24px" }}>
           {roles.map(role => (
             <div
               key={role.key}
@@ -5256,9 +5266,9 @@ export default function TrafficInspectorModule({ user, onLogout }) {
           }}
         >
           {[
-            { label: "Total Personnel", value: smList.length + ssList.length + tmList.length, icon: Users, bg: "#f1f5f9", iconColor: "#475569", valColor: "#0f172a" },
-            { label: "Pending Assessments", value: smPending + ssPending + tmPending, icon: ClipboardList, bg: "#fee2e2", iconColor: "#dc2626", valColor: "#dc2626" },
-            { label: "Completed Assessments", value: smCompleted + ssCompleted + tmCompleted, icon: CheckCircle2, bg: "#dcfce7", iconColor: "#16a34a", valColor: "#16a34a" },
+            { label: "Total Personnel", value: smList.length + tmList.length, icon: Users, bg: "#f1f5f9", iconColor: "#475569", valColor: "#0f172a" },
+            { label: "Pending Assessments", value: smPending + tmPending, icon: ClipboardList, bg: "#fee2e2", iconColor: "#dc2626", valColor: "#dc2626" },
+            { label: "Completed Assessments", value: smCompleted + tmCompleted, icon: CheckCircle2, bg: "#dcfce7", iconColor: "#16a34a", valColor: "#16a34a" },
             { label: "Submitted This Month", value: 2, icon: Send, bg: "#dbeafe", iconColor: "#2563eb", valColor: "#2563eb" },
             { label: "Current Assessment Cycle", value: "May 2026", icon: Calendar, bg: "#f1f5f9", iconColor: "#475569", valColor: "#0f172a" }
           ].map((stat, idx) => (

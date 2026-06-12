@@ -26,7 +26,7 @@ export function PointsmanDashboard({
           </div>
           <div>
             <label>{t("Latest Score")}</label>
-            <strong>{latestScore !== null ? `${latestScore}/${latestOutOf}` : "—"}</strong>
+            <strong>{latestScore !== null ? (latestScore === "Awaiting Approval" ? t("Awaiting Approval") : `${latestScore}/${latestOutOf}`) : "—"}</strong>
           </div>
         </article>
 
@@ -46,8 +46,8 @@ export function PointsmanDashboard({
           </div>
           <div>
             <label>{t("Current Category")}</label>
-            <strong style={{ color: latestCategory === "Pending" ? "#d97706" : getCategoryColor(latestCategory) }}>
-              {latestCategory === "Pending" ? t("Eval Pending") : (latestCategory !== "—" ? `${t("Category")} ${latestCategory}` : "—")}
+            <strong style={{ color: (latestCategory === "Pending" || latestCategory === "Awaiting Approval") ? "#d97706" : getCategoryColor(latestCategory) }}>
+              {latestCategory === "Pending" || latestCategory === "Awaiting Approval" ? t(latestCategory) : (latestCategory !== "—" ? `${t("Category")} ${latestCategory}` : "—")}
             </strong>
           </div>
         </article>

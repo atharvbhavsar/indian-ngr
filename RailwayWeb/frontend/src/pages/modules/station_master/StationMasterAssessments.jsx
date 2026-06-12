@@ -19,6 +19,9 @@ export function StationMasterAssessments(props) {
     smId
   } = props;
 
+  const latestApprovedAssess = (smAssessmentHistory || []).find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const hasUnapproved = (smAssessmentHistory || []).some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+
   /* Scorecard detail view */
   if (myAssessSelected) {
     const sc = myAssessSelected;
@@ -256,14 +259,14 @@ export function StationMasterAssessments(props) {
             <div>
               <span style={{color:"#166534", display:"block"}}>{t("Last Exam Score")}</span>
               <strong style={{color:"#14532d", fontSize:13}}>
-                {smMcqTest ? `${smMcqTest.correctCount}/25` : (hasHistory ? `${smAssessmentHistory[0].sections?.find(s=>s.title.includes("MCQ"))?.marks || 0}/25` : t("N/A"))}
+                {latestApprovedAssess ? `${latestApprovedAssess.sections?.find(s=>s.title.includes("MCQ"))?.marks || latestApprovedAssess.totalScore || 0}/25` : (hasUnapproved ? t("Awaiting Approval") : t("N/A"))}
               </strong>
             </div>
-            {hasHistory && (
+            {latestApprovedAssess && (
               <div style={{borderLeft:"1px solid #bbf7d0", paddingLeft:16}}>
                 <span style={{color:"#166534", display:"block"}}>{t("Next Due Date")}</span>
                 <strong style={{color:"#14532d", fontSize:14}}>
-                  {new Date(new Date(smAssessmentHistory[0].date).setMonth(new Date(smAssessmentHistory[0].date).getMonth() + 6)).toLocaleDateString(language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-GB', {day: 'numeric', month: 'short', year: 'numeric'})}
+                  {new Date(new Date(latestApprovedAssess.date).setMonth(new Date(latestApprovedAssess.date).getMonth() + 6)).toLocaleDateString(language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-GB', {day: 'numeric', month: 'short', year: 'numeric'})}
                 </strong>
               </div>
             )}
@@ -290,21 +293,21 @@ export function StationMasterAssessments(props) {
             </div>
             <div className="sm2-report-mini">
               <label>{t("Latest Score")}</label>
-              <strong>{smAssessmentHistory[0]?.totalScore}/{smAssessmentHistory[0]?.isOnlineExam ? 25 : 100}</strong>
+              <strong>{latestApprovedAssess ? `${latestApprovedAssess.totalScore}/${latestApprovedAssess.isOnlineExam ? 25 : 100}` : (hasUnapproved ? t("Awaiting Approval") : "—")}</strong>
             </div>
             <div className="sm2-report-mini">
               <label>{t("Average TI Score")}</label>
               <strong>{
                 (() => {
-                  const regs = smAssessmentHistory.filter(h => !h.isOnlineExam);
+                  const regs = smAssessmentHistory.filter(h => !h.isOnlineExam && ["Approved", "Completed"].includes(h.approvalStatus));
                   return regs.length ? `${Math.round(regs.reduce((s, a) => s + a.totalScore, 0) / regs.length)}/100` : "—";
                 })()
               }</strong>
             </div>
             <div className="sm2-report-mini">
               <label>{t("Latest Assessment")}</label>
-              <strong style={{color: getCatColor(smAssessmentHistory[0]?.category)}}>
-                {smAssessmentHistory[0]?.isOnlineExam ? t("Online CBT") : `${t("Category")} ${smAssessmentHistory[0]?.category}`}
+              <strong style={{color: latestApprovedAssess ? getCatColor(latestApprovedAssess.category) : "#64748b"}}>
+                {latestApprovedAssess ? (latestApprovedAssess.isOnlineExam ? t("Online CBT") : `${t("Category")} ${latestApprovedAssess.category}`) : (hasUnapproved ? t("Awaiting Approval") : "—")}
               </strong>
             </div>
           </div>
@@ -316,24 +319,35 @@ export function StationMasterAssessments(props) {
                 <span key={h}>{t(h)}</span>)}
             </div>
             {smAssessmentHistory.map(sc => {
-              const cat = sc.category;
+              const isApproved = ["Approved", "Completed"].includes(sc.approvalStatus);
+              const cat = isApproved ? sc.category : null;
+              const scoreDisplay = isApproved ? `${sc.totalScore}/${sc.isOnlineExam ? 25 : 100}` : "—";
               return (
-                <button key={sc.id} className="sm2-myassess-row" onClick={() => setMyAssessSelected(sc)}>
+                <button 
+                  key={sc.id} 
+                  className="sm2-myassess-row" 
+                  onClick={() => isApproved && setMyAssessSelected(sc)}
+                  style={{ cursor: isApproved ? "pointer" : "default" }}
+                >
                   <span title={`${t("Cycle:")} ${sc.period ? sc.period.replace(/(Q[1-4])/g, (q) => t(q)) : ""}\n${t("Duration:")} ${formatQuarterPeriod(sc.period, t)}`}>
                     <strong>{formatQuarterPeriod(sc.period, t)}</strong>
                   </span>
                   <span>{sc.date}</span>
-                  <span><strong>{sc.totalScore}/{sc.isOnlineExam ? 25 : 100}</strong></span>
+                  <span><strong>{scoreDisplay}</strong></span>
                   <span>
-                    <span className="sm2-badge" style={{background:getCatBg(cat),color:getCatColor(cat)}}>
-                      {sc.isOnlineExam ? t("CBT Exam") : `${t("Cat.")} ${cat}`}
-                    </span>
+                    {isApproved ? (
+                      <span className="sm2-badge" style={{background:getCatBg(cat),color:getCatColor(cat)}}>
+                        {sc.isOnlineExam ? t("CBT Exam") : `${t("Cat.")} ${cat}`}
+                      </span>
+                    ) : (
+                      <span style={{ color: "#ea580c", fontSize: "12px", fontWeight: "600" }}>{t("Awaiting Approval")}</span>
+                    )}
                   </span>
                   <span style={{fontSize:11,color:"#64748b"}}>{t(sc.assessedBy)}</span>
                   <span>
                     <span className={`sm2-status-pill sm2-status-${sc.approvalStatus.toLowerCase()}`}>{t(sc.approvalStatus)}</span>
                   </span>
-                  <span style={{color:"#2563eb",fontSize:12,fontWeight:600}}>{t("View Form")}</span>
+                  <span style={{color: isApproved ? "#2563eb" : "#94a3b8", fontSize:12, fontWeight:600}}>{isApproved ? t("View Form") : "—"}</span>
                 </button>
               );
             })}

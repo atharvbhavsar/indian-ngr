@@ -37,7 +37,7 @@ export default function SSDashboard({
           </div>
           <div>
             <label>Latest Score</label>
-            <strong>{latestScore !== null ? (String(latestScore).includes("/") ? latestScore : `${latestScore}/100`) : "—"}</strong>
+            <strong>{latestScore !== null ? (latestScore === "Awaiting Approval" || String(latestScore).includes("/") ? latestScore : `${latestScore}/100`) : "—"}</strong>
           </div>
         </article>
 

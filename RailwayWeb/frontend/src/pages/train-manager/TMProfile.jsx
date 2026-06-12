@@ -14,15 +14,19 @@ export function TMProfile({
 }) {
   const { t } = useLanguage();
 
-  const personalScoreData = [...history].reverse().map(h => ({
-    month: h.assessmentPeriod ? h.assessmentPeriod.replace(" 2026", "").replace(" 2025", "") : h.date,
-    score: h.totalScore
-  }));
+  const personalScoreData = [...history]
+    .filter(h => ["Approved", "Completed"].includes(h.approvalStatus))
+    .reverse()
+    .map(h => ({
+      month: h.assessmentPeriod ? h.assessmentPeriod.replace(" 2026", "").replace(" 2025", "") : h.date,
+      score: h.totalScore
+    }));
 
-  const latestApproved = (history || []).find(h => ["Approved", "Completed", "Submitted", "Pending"].includes(h.approvalStatus));
-  const score = (user.score !== undefined && user.score !== null && user.score !== 0) ? user.score : (latestApproved?.totalScore || latestScore || null);
+  const latestApproved = (history || []).find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const hasUnapproved = (history || []).some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+  const score = latestApproved?.totalScore !== undefined && latestApproved?.totalScore !== null ? latestApproved.totalScore : (hasUnapproved ? null : (user.score || null));
   const computedCategory = latestApproved?.dbCategory || latestApproved?.category || (score ? getCategory(score) : null);
-  const category = (user.category && user.category !== "Untested") ? user.category : ((user.cat && user.cat !== "Untested") ? user.cat : ((latestCategory && latestCategory !== "—" && latestCategory !== "Untested" && !latestCategory.includes("Awaiting")) ? latestCategory : (computedCategory || null))) || "Untested";
+  const category = latestApproved ? computedCategory : (hasUnapproved ? "Untested" : ((user.category && user.category !== "Untested") ? user.category : ((user.cat && user.cat !== "Untested") ? user.cat : "Untested")));
 
   // Fallbacks to trainManagerProfile fields for offline/local sandbox consistency
   const fallbackDesignation = user.role || trainManagerProfile.designation;

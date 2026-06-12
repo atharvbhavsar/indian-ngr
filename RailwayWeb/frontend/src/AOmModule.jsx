@@ -3125,7 +3125,7 @@ function AOmModule({ user, onLogout }) {
 
                           return (
                             <tr key={item.id}>
-                              <td><strong>{item.id}</strong></td>
+                              <td><strong>{item.hrmsId || item.id}</strong></td>
                               <td>
                                 <div style={{ fontWeight: 600, color: "#0f172a" }}>{empName}</div>
                                 <div style={{ fontSize: "11px", color: "#64748b" }}>Division: {division}</div>
@@ -3144,20 +3144,28 @@ function AOmModule({ user, onLogout }) {
                                 </span>
                               </td>
                               <td>
-                                <strong style={{ color: score >= 90 ? "#16a34a" : score >= 80 ? "#2563eb" : "#dc2626" }}>
-                                  {score}/100
-                                </strong>
-                                <span style={{
-                                  padding: "2px 6px",
-                                  borderRadius: "4px",
-                                  backgroundColor: "#eff6ff",
-                                  color: "#2563eb",
-                                  fontSize: "11px",
-                                  fontWeight: "600",
-                                  marginLeft: "6px"
-                                }}>
-                                  Grade {grade}
-                                </span>
+                                {item.quizMarks !== null && item.quizMarks !== undefined ? (
+                                  <strong style={{ color: "#2563eb" }}>
+                                    MCQ: {item.quizMarks}/25
+                                  </strong>
+                                ) : (
+                                  <>
+                                    <strong style={{ color: score >= 90 ? "#16a34a" : score >= 80 ? "#2563eb" : "#dc2626" }}>
+                                      {score}/100
+                                    </strong>
+                                    <span style={{
+                                      padding: "2px 6px",
+                                      borderRadius: "4px",
+                                      backgroundColor: "#eff6ff",
+                                      color: "#2563eb",
+                                      fontSize: "11px",
+                                      fontWeight: "600",
+                                      marginLeft: "6px"
+                                    }}>
+                                      Grade {grade}
+                                    </span>
+                                  </>
+                                )}
                               </td>
                               <td>{assessedBy}</td>
                               <td>{pendingSince}</td>
@@ -3871,13 +3879,81 @@ function AOmModule({ user, onLogout }) {
           }
 
           setOpenAssessmentId(pendingItem.id);
-          setAnswersByAssessment((prev) => {
-            if (prev[pendingItem.id]) {
-              return prev;
+          const tab = resolveAssessmentTab(pendingItem.title);
+          setAssessmentRoleTab(tab);
+
+          const origAssess = allDbAssessments ? allDbAssessments.find(a => a.assessment_id === pendingItem.id) : null;
+          const dbAnswers = origAssess?.TEST_ATTEMPT?.[0]?.answers || origAssess?.TEST_ATTEMPT?.answers;
+          let parsedAnswers = {};
+          if (dbAnswers) {
+            try {
+              parsedAnswers = typeof dbAnswers === "string" ? JSON.parse(dbAnswers) : dbAnswers;
+            } catch (e) {
+              console.error("Error parsing dbAnswers:", e);
             }
+          }
+
+          const totalScore = origAssess?.TEST_ATTEMPT?.[0]?.obtained_marks || origAssess?.TEST_ATTEMPT?.obtained_marks || 0;
+          if (totalScore > 0 && Object.keys(parsedAnswers).length === 0) {
+            if (tab === "TI") {
+              const mcqScore = Math.round(totalScore * 0.25);
+              const checklistTarget = totalScore - mcqScore;
+              const sections = [
+                { key: "alertnessAndObservation", weight: 5 },
+                { key: "safetyRecord", weight: 3 },
+                { key: "leadershipAndManagement", weight: 3 },
+                { key: "discipline", weight: 2 },
+                { key: "appearanceAndNeatness", weight: 2 }
+              ];
+              const slots = [];
+              sections.forEach(sec => {
+                for (let i = 0; i < 5; i++) {
+                  slots.push({ key: `${sec.key}_${i}`, weight: sec.weight });
+                }
+              });
+              slots.sort((a, b) => b.weight - a.weight);
+              let recursiveCalls = 0;
+              const findSubset = (target, index, currentSum, chosen) => {
+                recursiveCalls++;
+                if (recursiveCalls > 500) return false;
+                if (currentSum === target) return true;
+                if (index >= slots.length || currentSum > target) return false;
+                chosen.add(slots[index].key);
+                if (findSubset(target, index + 1, currentSum + slots[index].weight, chosen)) return true;
+                chosen.delete(slots[index].key);
+                if (findSubset(target, index + 1, currentSum, chosen)) return true;
+                return false;
+              };
+              let tempTarget = checklistTarget;
+              while (tempTarget >= 0) {
+                const chosenKeys = new Set();
+                if (findSubset(tempTarget, 0, 0, chosenKeys)) {
+                  slots.forEach(slot => {
+                    parsedAnswers[slot.key] = chosenKeys.has(slot.key) ? "yes" : "no";
+                  });
+                  break;
+                }
+                tempTarget--;
+              }
+              parsedAnswers.mcqScore = mcqScore;
+              parsedAnswers.knowledgeMarks = String(mcqScore);
+              parsedAnswers.knowledgeOfRules = mcqScore >= 12 ? "yes" : "no";
+              parsedAnswers.alcoholicStatus = "Non-Alcoholic";
+              parsedAnswers.pmeStatus = "Fit";
+              parsedAnswers.refStatus = "Cleared";
+              parsedAnswers.counselling = "Not Required";
+              parsedAnswers.automaticTraining = "Not Required";
+              parsedAnswers.remarks = "Synced from database score";
+            }
+          }
+
+          setAnswersByAssessment((prev) => {
             return {
               ...prev,
-              [pendingItem.id]: buildPrefilledAnswers(pendingItem.title)
+              [pendingItem.id]: {
+                ...buildPrefilledAnswers(pendingItem.title),
+                ...parsedAnswers
+              }
             };
           });
         };

@@ -18,6 +18,9 @@ export function PointsmanAssessments({
 }) {
   const { t } = useLanguage();
 
+  const latestApprovedAttempt = history.find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const hasUnapproved = history.some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+
   /* Scorecard detail view */
   if (myAssessSelected) {
     return (
@@ -145,20 +148,23 @@ export function PointsmanAssessments({
           <div style={{ display: "flex", gap: 16, fontSize: 12, textAlign: "right" }}>
             <div>
               <span style={{ color: "#166534", display: "block" }}>{t("Last Exam Score")}</span>
-              <strong style={{ color: "#14532d", fontSize: 13 }}>{pmMcqTest ? `${pmMcqTest.correctCount}/25` : `${history[0]?.totalScore || 84}/100`}</strong>
+              <strong style={{ color: "#14532d", fontSize: 13 }}>
+                {latestApprovedAttempt
+                  ? `${latestApprovedAttempt.totalScore}/${latestApprovedAttempt.isOnlineExam ? 25 : 100}`
+                  : (hasUnapproved ? t("Awaiting Approval") : "—")}
+              </strong>
             </div>
             <div style={{ borderLeft: "1px solid #bbf7d0", paddingLeft: 16 }}>
               <span style={{ color: "#166534", display: "block" }}>{t("Next Due Date")}</span>
               <strong style={{ color: "#14532d", fontSize: 13 }}>
                 {(() => {
-                  const latest = history.find(h => !h.approvalStatus || ["Approved", "Completed", "EVALUATED"].includes(h.approvalStatus));
-                  if (!latest) return t("Pending Evaluation");
-                  const pct = latest.isOnlineExam ? (latest.totalScore / 25) * 100 : latest.totalScore;
-                  const cat = latest.category || getCategory(pct);
+                  if (!latestApprovedAttempt) return hasUnapproved ? t("Pending Evaluation") : t("Not Scheduled");
+                  const pct = latestApprovedAttempt.isOnlineExam ? (latestApprovedAttempt.totalScore / 25) * 100 : latestApprovedAttempt.totalScore;
+                  const cat = latestApprovedAttempt.category || getCategory(pct);
                   let m = 6;
                   if (cat === "C") m = 3;
                   if (cat === "D") m = 1;
-                  const d = new Date(latest.date);
+                  const d = new Date(latestApprovedAttempt.date);
                   d.setMonth(d.getMonth() + m);
                   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
                 })()}
@@ -179,26 +185,34 @@ export function PointsmanAssessments({
         </div>
         <div className="sm2-report-mini">
           <label>{t("Latest Score")}</label>
-          <strong>{history[0]?.totalScore ?? "—"}/{history[0]?.isOnlineExam ? 25 : 100}</strong>
+          <strong>
+            {latestApprovedAttempt
+              ? `${latestApprovedAttempt.totalScore}/${latestApprovedAttempt.isOnlineExam ? 25 : 100}`
+              : (hasUnapproved ? t("Awaiting Approval") : "—")}
+          </strong>
         </div>
         <div className="sm2-report-mini">
           <label>{t("Average SM Score")}</label>
           <strong>{
             (() => {
-              const regs = history.filter(h => !h.isOnlineExam);
+              const regs = history.filter(h => !h.isOnlineExam && ["Approved", "Completed"].includes(h.approvalStatus));
               return regs.length ? `${Math.round(regs.reduce((s, a) => s + a.totalScore, 0) / regs.length)}/100` : "—";
             })()
           }</strong>
         </div>
         <div className="sm2-report-mini">
           <label>{t("Latest Assessment")}</label>
-          <strong style={{ color: history.length === 0 ? "#94a3b8" : getCategoryColor(history[0]?.category || getCategory(history[0]?.totalScore || 0)) }}>
-            {history.length === 0
-              ? t("Untested")
-              : history[0]?.isOnlineExam
+          {latestApprovedAttempt ? (
+            <strong style={{ color: getCategoryColor(latestApprovedAttempt.category || getCategory(latestApprovedAttempt.isOnlineExam ? (latestApprovedAttempt.totalScore / 25) * 100 : latestApprovedAttempt.totalScore)) }}>
+              {latestApprovedAttempt.isOnlineExam
                 ? t("Online CBT")
-                : `${t("Category")} ${history[0]?.category || getCategory(history[0]?.totalScore || 0)}`}
-          </strong>
+                : `${t("Category")} ${latestApprovedAttempt.category || getCategory(latestApprovedAttempt.totalScore)}`}
+            </strong>
+          ) : (
+            <strong style={{ color: "#64748b" }}>
+              {hasUnapproved ? t("Awaiting Approval") : t("Untested")}
+            </strong>
+          )}
         </div>
       </div>
 
@@ -209,28 +223,36 @@ export function PointsmanAssessments({
             <span key={h}>{t(h)}</span>)}
         </div>
         {history.map(sc => {
-          const cat = sc.category || getCategory(sc.totalScore);
+          const isApproved = ["Approved", "Completed"].includes(sc.approvalStatus);
+          const cat = isApproved ? (sc.category || getCategory(sc.isOnlineExam ? (sc.totalScore / 25) * 100 : sc.totalScore)) : "—";
+          const outOf = sc.isOnlineExam ? 25 : 100;
+          const scoreDisplay = isApproved ? `${sc.totalScore}/${outOf}` : "—";
           return (
-            <button key={sc.id} className="sm2-myassess-row" onClick={() => setMyAssessSelected(sc)}>
+            <button
+              key={sc.id}
+              className="sm2-myassess-row"
+              onClick={() => isApproved && setMyAssessSelected(sc)}
+              style={{ cursor: isApproved ? "pointer" : "default" }}
+            >
               <span title={`Cycle: ${sc.assessmentPeriod}\nDuration: ${formatQuarterPeriod(sc.assessmentPeriod)}`}>
                 <strong>{formatQuarterPeriod(sc.assessmentPeriod)}</strong>
               </span>
               <span>{sc.date}</span>
-              <span><strong>{sc.totalScore}/{sc.isOnlineExam ? 25 : 100}</strong></span>
+              <span><strong>{scoreDisplay}</strong></span>
               <span>
-                {sc.approvalStatus === "Pending" ? (
-                  <span className="sm2-badge" style={{ background: "#fef3c7", color: "#d97706" }}>{t("Evaluation Pending")}</span>
-                ) : (
+                {isApproved ? (
                   <span className="sm2-badge" style={{ background: getCategoryBg(cat), color: getCategoryColor(cat) }}>
                     {sc.isOnlineExam ? t("CBT Exam") : `${t("Category")} ${cat}`}
                   </span>
+                ) : (
+                  <span className="sm2-badge" style={{ background: "#fef3c7", color: "#d97706" }}>{t("Evaluation Pending")}</span>
                 )}
               </span>
               <span style={{ fontSize: 11, color: "#64748b" }}>{sc.assessedBy || "S. Deshmukh (SM)"}</span>
               <span>
                 <span className={`sm2-status-pill sm2-status-${(sc.approvalStatus || "approved").toLowerCase()}`}>{t(sc.approvalStatus || "Approved")}</span>
               </span>
-              <span style={{ color: "#2563eb", fontSize: 12, fontWeight: 600 }}>{t("View Form")}</span>
+              <span style={{ color: isApproved ? "#2563eb" : "#94a3b8", fontSize: 12, fontWeight: 600 }}>{isApproved ? t("View Form") : "—"}</span>
             </button>
           );
         })}

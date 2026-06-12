@@ -13,10 +13,13 @@ export function PointsmanProfile({
 }) {
   const { language, changeLanguage, t } = useLanguage();
 
-  const personalScoreData = [...history].reverse().map(h => ({
-    month: h.assessmentPeriod.replace(" 2026", "").replace(" 2025", ""),
-    score: h.totalScore
-  }));
+  const personalScoreData = [...history]
+    .filter(h => ["Approved", "Completed"].includes(h.approvalStatus))
+    .reverse()
+    .map(h => ({
+      month: h.assessmentPeriod ? h.assessmentPeriod.replace(" 2026", "").replace(" 2025", "") : h.date,
+      score: h.totalScore
+    }));
 
   // Derive risk from category: A/B → Low, C → Medium, D → High
   const riskCategory = history.length > 0 ? latestCategory : (profile.currentCategory || profile.category || "A");
@@ -48,8 +51,8 @@ export function PointsmanProfile({
                   {t("Pending First Assessment")}
                 </span>
               </>
-            ) : latestCategory === "Pending" ? (
-              <span className="sdom-badge" style={{ background: "#fef3c7", color: "#d97706" }}>{t("Evaluation Pending")}</span>
+            ) : (latestCategory === "Pending" || latestCategory === "Awaiting Approval") ? (
+              <span className="sdom-badge sdom-badge-warning">{t("Awaiting Approval")}</span>
             ) : latestCategory === "Untested" || !latestCategory || latestCategory === "—" ? (
               <span className="sdom-badge sdom-badge-warning">{t("Untested")}</span>
             ) : (
@@ -69,7 +72,7 @@ export function PointsmanProfile({
         </div>
         <div className="sdom-station-header-stats">
           <div className="sdom-station-header-stat">
-            <span className="val">{history.length > 0 && latestScore !== null ? `${latestScore}/${latestOutOf}` : t("No Assessment Taken")}</span>
+            <span className="val">{history.length > 0 && latestScore !== null ? (latestScore === "Awaiting Approval" ? t("Awaiting Approval") : `${latestScore}/${latestOutOf}`) : (latestCategory === "Awaiting Approval" ? t("Awaiting Approval") : t("No Assessment Taken"))}</span>
             <span className="lbl">{t("Latest Score")}</span>
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />

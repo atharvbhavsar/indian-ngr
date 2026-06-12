@@ -408,12 +408,67 @@ export function useTrafficInspectorState(user, onLogout) {
           }));
         setRecentAssessments(recentAssessmentsMapped);
 
-        // Check if TI exam is assigned (Pending status with NO test attempt yet)
-        const pendingTIExam = assessList.find(a => a.employee_id === effectiveUserId && a.status === 'Pending' && (!a.TEST_ATTEMPT || a.TEST_ATTEMPT.length === 0));
+        // Check if TI exam is assigned (Pending, AVAILABLE, or LOCKED (once scheduled date-time is reached))
+        const hrmsKey = user?.hrmsId || user?.hrms_id || "";
+        const tiAssessments = assessList.filter(a => a.employee_id === effectiveUserId && ['Pending', 'AVAILABLE', 'LOCKED', 'IN_PROGRESS'].includes(a.status));
+        let isDbActive = false;
+        if (tiAssessments.length > 0) {
+          const activeAssess = tiAssessments[0];
+          isDbActive = ['Pending', 'AVAILABLE', 'IN_PROGRESS'].includes(activeAssess.status);
+          if (!isDbActive && activeAssess.status === 'LOCKED' && activeAssess.due_date) {
+            let timeStr = "12:00 AM";
+            const tMatch = (activeAssess.assessment_type || "").match(/Time:\s*([^\n\r|]+)/i);
+            if (tMatch) timeStr = tMatch[1].trim();
+            
+            let hours = 0;
+            let minutes = 0;
+            const timeParts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (timeParts) {
+              hours = parseInt(timeParts[1]);
+              minutes = parseInt(timeParts[2]);
+              const ampm = timeParts[3].toUpperCase();
+              if (ampm === "PM" && hours < 12) hours += 12;
+              if (ampm === "AM" && hours === 12) hours = 0;
+            } else {
+              const parts24 = timeStr.match(/(\d+):(\d+)/);
+              if (parts24) {
+                hours = parseInt(parts24[1]);
+                minutes = parseInt(parts24[2]);
+              }
+            }
+            
+            let year = 2026, month = 5, day = 12;
+            if (activeAssess.due_date.includes("-")) {
+              const parts = activeAssess.due_date.split("-");
+              if (parts[0].length === 4) {
+                year = parseInt(parts[0]);
+                month = parseInt(parts[1]) - 1;
+                day = parseInt(parts[2]);
+              } else {
+                day = parseInt(parts[0]);
+                month = parseInt(parts[1]) - 1;
+                year = parseInt(parts[2]);
+              }
+            }
+            const targetDate = new Date(year, month, day, hours, minutes, 0);
+            isDbActive = new Date() >= targetDate;
+          }
+        }
+
+        if (isDbActive) {
+          const currentActivated = localStorage.getItem(`ti_test_activated_${hrmsKey}`);
+          if (currentActivated !== "true") {
+            localStorage.setItem(`ti_test_activated_${hrmsKey}`, "true");
+            window.dispatchEvent(new Event("storage"));
+          }
+        }
+
+        const isLocalActive = localStorage.getItem(`ti_test_activated_${hrmsKey}`) === "true";
         const wasExamAssigned = isExamAssignedRef.current;
-        isExamAssignedRef.current = !!pendingTIExam;
-        setIsExamAssigned(!!pendingTIExam);
-        if (pendingTIExam && !wasExamAssigned) {
+        const testIsActive = isDbActive || isLocalActive;
+        isExamAssignedRef.current = testIsActive;
+        setIsExamAssigned(testIsActive);
+        if (testIsActive && !wasExamAssigned) {
           triggerNotification("info", "Assessment access has been granted. Please complete your safety examination.");
         }
       }
@@ -1390,7 +1445,7 @@ export function useTrafficInspectorState(user, onLogout) {
                 .from("ASSESSMENT")
                 .select("assessment_id")
                 .eq("employee_id", emp.user_id)
-                .in("status", ["LOCKED", "AVAILABLE", "IN_PROGRESS", "Pending", "Scheduled"])
+                .in("status", ["LOCKED", "AVAILABLE", "IN_PROGRESS", "Pending", "Draft", "Scheduled"])
                 .order("created_at", { ascending: false })
                 .limit(1);
 
@@ -2543,7 +2598,7 @@ export function useTrafficInspectorState(user, onLogout) {
         .from("ASSESSMENT")
         .select("assessment_id")
         .eq("employee_id", effectiveId)
-        .eq("status", "Pending");
+        .in("status", ["Pending", "AVAILABLE"]);
 
       if (pendingErr) throw pendingErr;
 
@@ -2578,6 +2633,12 @@ export function useTrafficInspectorState(user, onLogout) {
       if (updateErr) throw updateErr;
 
       setIsExamAssigned(false);
+      const hrmsKey = user?.hrmsId || user?.hrms_id || tiId;
+      if (hrmsKey) {
+        localStorage.removeItem(`ti_test_activated_${hrmsKey}`);
+        localStorage.removeItem(`ti_test_activated_time_${hrmsKey}`);
+        localStorage.removeItem(`ti_test_assigned_${hrmsKey}`);
+      }
       addAuditLog("Assigned Assessment Completed", `Score: ${percentage}/100`);
       triggerNotification("success", `Compliance check complete: Scored ${percentage}%`);
       setQuizState("result");
@@ -2609,7 +2670,7 @@ export function useTrafficInspectorState(user, onLogout) {
       }
 
       for (const hrmsId of hrmsIds) {
-        const keyPrefix = role === "SM" ? "sm" : "tm";
+        const keyPrefix = role === "SM" ? "sm" : role === "SS" ? "ss" : "tm";
         // Set local storage flags
         localStorage.setItem(`${keyPrefix}_test_activated_${hrmsId}`, "true");
         localStorage.setItem(`${keyPrefix}_test_activated_time_${hrmsId}`, Date.now().toString());
@@ -2626,7 +2687,7 @@ export function useTrafficInspectorState(user, onLogout) {
 
           if (!empErr && empUser?.user_id) {
             const empUserUuid = empUser.user_id;
-            const assessType = role === "SM" ? "Station Master Assessment" : "Train Manager Assessment";
+            const assessType = role === "SM" ? "Station Master Assessment" : role === "SS" ? "Station Superintendent Assessment" : "Train Manager Assessment";
 
             // Check if there is a LOCKED/pending assessment
             const { data: lockedAssessments } = await supabase
@@ -2709,7 +2770,11 @@ export function useTrafficInspectorState(user, onLogout) {
         if (empErr || !empUser?.user_id) throw new Error("Could not resolve employee UUID.");
         const empUserUuid = empUser.user_id;
 
-        const baseAssessType = role === "SM" ? "Station Master Assessment" : "Train Manager Assessment";
+        const baseAssessType = role === "SM" ? "Station Master Assessment" :
+                               role === "SS" ? "Station Superintendent Assessment" :
+                               role === "TM" ? "Train Manager Assessment" :
+                               role === "TI" ? "Safety Exam" :
+                               "Safety Exam";
         const assessmentType = `${baseAssessType} | Time: ${time || "10:00 AM"}`;
 
         // Check if there is an active assessment

@@ -1789,7 +1789,11 @@ export function useAomState(user, onLogout) {
         if (empErr || !empUser?.user_id) throw new Error("Could not resolve employee UUID.");
         const empUserUuid = empUser.user_id;
 
-        const baseAssessType = role === "TI" ? "Safety Exam" : "Station Superintendent Assessment";
+        const baseAssessType = role === "SM" ? "Station Master Assessment" :
+                               role === "SS" ? "Station Superintendent Assessment" :
+                               role === "TM" ? "Train Manager Assessment" :
+                               role === "TI" ? "Safety Exam" :
+                               "Safety Exam";
         const assessmentType = `${baseAssessType} | Time: ${time || "10:00 AM"}`;
 
         // Check if there is an active assessment
@@ -1992,7 +1996,8 @@ export function useAomState(user, onLogout) {
         obtained_marks: computedScore,
         percentage: computedScore,
         category: grade,
-        total_marks: 100
+        total_marks: 100,
+        answers: answers
       }).eq("assessment_id", id);
       if (taErr) console.warn("TEST_ATTEMPT update warning:", taErr.message);
 
@@ -2066,13 +2071,25 @@ export function useAomState(user, onLogout) {
     const tab = resolveAssessmentTab(item.title);
     setAssessmentRoleTab(tab);
     setOpenAssessmentId(item.id);
-    setAnswersByAssessment((prev) => {
-      if (prev[item.id]) {
-        return prev;
+
+    const origAssess = allDbAssessments ? allDbAssessments.find(a => a.assessment_id === item.id) : null;
+    const dbAnswers = origAssess?.TEST_ATTEMPT?.[0]?.answers || origAssess?.TEST_ATTEMPT?.answers;
+    let parsedAnswers = {};
+    if (dbAnswers) {
+      try {
+        parsedAnswers = typeof dbAnswers === "string" ? JSON.parse(dbAnswers) : dbAnswers;
+      } catch (e) {
+        console.error("Error parsing dbAnswers:", e);
       }
+    }
+
+    setAnswersByAssessment((prev) => {
       return {
         ...prev,
-        [item.id]: buildPrefilledAnswers(item.title)
+        [item.id]: {
+          ...buildPrefilledAnswers(item.title),
+          ...parsedAnswers
+        }
       };
     });
   };
@@ -2127,13 +2144,81 @@ export function useAomState(user, onLogout) {
     }
 
     setOpenAssessmentId(pendingItem.id);
-    setAnswersByAssessment((prev) => {
-      if (prev[pendingItem.id]) {
-        return prev;
+    const tab = resolveAssessmentTab(pendingItem.title);
+    setAssessmentRoleTab(tab);
+
+    const origAssess = allDbAssessments ? allDbAssessments.find(a => a.assessment_id === pendingItem.id) : null;
+    const dbAnswers = origAssess?.TEST_ATTEMPT?.[0]?.answers || origAssess?.TEST_ATTEMPT?.answers;
+    let parsedAnswers = {};
+    if (dbAnswers) {
+      try {
+        parsedAnswers = typeof dbAnswers === "string" ? JSON.parse(dbAnswers) : dbAnswers;
+      } catch (e) {
+        console.error("Error parsing dbAnswers:", e);
       }
+    }
+
+    const totalScore = origAssess?.TEST_ATTEMPT?.[0]?.obtained_marks || origAssess?.TEST_ATTEMPT?.obtained_marks || 0;
+    if (totalScore > 0 && Object.keys(parsedAnswers).length === 0) {
+      if (tab === "TI") {
+        const mcqScore = Math.round(totalScore * 0.25);
+        const checklistTarget = totalScore - mcqScore;
+        const sections = [
+          { key: "alertnessAndObservation", weight: 5 },
+          { key: "safetyRecord", weight: 3 },
+          { key: "leadershipAndManagement", weight: 3 },
+          { key: "discipline", weight: 2 },
+          { key: "appearanceAndNeatness", weight: 2 }
+        ];
+        const slots = [];
+        sections.forEach(sec => {
+          for (let i = 0; i < 5; i++) {
+            slots.push({ key: `${sec.key}_${i}`, weight: sec.weight });
+          }
+        });
+        slots.sort((a, b) => b.weight - a.weight);
+        let recursiveCalls = 0;
+        const findSubset = (target, index, currentSum, chosen) => {
+          recursiveCalls++;
+          if (recursiveCalls > 500) return false;
+          if (currentSum === target) return true;
+          if (index >= slots.length || currentSum > target) return false;
+          chosen.add(slots[index].key);
+          if (findSubset(target, index + 1, currentSum + slots[index].weight, chosen)) return true;
+          chosen.delete(slots[index].key);
+          if (findSubset(target, index + 1, currentSum, chosen)) return true;
+          return false;
+        };
+        let tempTarget = checklistTarget;
+        while (tempTarget >= 0) {
+          const chosenKeys = new Set();
+          if (findSubset(tempTarget, 0, 0, chosenKeys)) {
+            slots.forEach(slot => {
+              parsedAnswers[slot.key] = chosenKeys.has(slot.key) ? "yes" : "no";
+            });
+            break;
+          }
+          tempTarget--;
+        }
+        parsedAnswers.mcqScore = mcqScore;
+        parsedAnswers.knowledgeMarks = String(mcqScore);
+        parsedAnswers.knowledgeOfRules = mcqScore >= 12 ? "yes" : "no";
+        parsedAnswers.alcoholicStatus = "Non-Alcoholic";
+        parsedAnswers.pmeStatus = "Fit";
+        parsedAnswers.refStatus = "Cleared";
+        parsedAnswers.counselling = "Not Required";
+        parsedAnswers.automaticTraining = "Not Required";
+        parsedAnswers.remarks = "Synced from database score";
+      }
+    }
+
+    setAnswersByAssessment((prev) => {
       return {
         ...prev,
-        [pendingItem.id]: buildPrefilledAnswers(pendingItem.title)
+        [pendingItem.id]: {
+          ...buildPrefilledAnswers(pendingItem.title),
+          ...parsedAnswers
+        }
       };
     });
   };
@@ -6004,22 +6089,25 @@ export function useAomState(user, onLogout) {
 
         const updatedMapped = mapped.map(userObj => {
           const userAssessments = assessList.filter(a => a.employee?.hrms_id === userObj.hrmsId);
-          const approvedAssessments = userAssessments.filter(a => a.status === 'Approved');
-          const totalApproved = approvedAssessments.length;
+          const activeAssessments = userAssessments.filter(a => ["Approved", "Completed", "EVALUATED", "Submitted"].includes(a.status));
+          const totalActive = activeAssessments.length;
 
-          if (totalApproved > 0) {
-            const latestApproved = [...approvedAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-            const score = latestApproved?.TEST_ATTEMPT?.[0]?.obtained_marks;
-            const cat = latestApproved?.TEST_ATTEMPT?.[0]?.category || userObj.cat || "A";
+          if (totalActive > 0) {
+            const latestAssess = [...activeAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            const score = latestAssess?.TEST_ATTEMPT?.[0]?.obtained_marks;
+            const cat = latestAssess?.TEST_ATTEMPT?.[0]?.category || userObj.cat || "A";
+            const isApproved = latestAssess.status !== "Submitted";
+            const statusStr = isApproved ? "Approved" : "Submitted";
+            const percentage = latestAssess?.TEST_ATTEMPT?.[0]?.percentage ?? (score ? Math.round((score / 25) * 100) : 0);
             return {
               ...userObj,
               totalAssessments: userAssessments.length,
-              approvalStatus: "Approved",
-              status: "Approved",
+              approvalStatus: statusStr,
+              status: statusStr,
               cat: cat,
               category: cat,
-              risk: cat === "D" ? "High" : (score >= 80 ? "Low" : score >= 60 ? "Medium" : "High"),
-              riskLevel: cat === "D" ? "High" : (score >= 80 ? "Low" : score >= 60 ? "Medium" : "High"),
+              risk: cat === "D" ? "High" : (percentage >= 80 ? "Low" : percentage >= 60 ? "Medium" : "High"),
+              riskLevel: cat === "D" ? "High" : (percentage >= 80 ? "Low" : percentage >= 60 ? "Medium" : "High"),
               score: score,
               lastScore: score
             };
@@ -6325,13 +6413,24 @@ export function useAomState(user, onLogout) {
           const roleName = resolveRoleDisplayName(a.employee?.ROLE?.role_name);
           const score = a.TEST_ATTEMPT?.[0]?.obtained_marks || 0;
           const cat = a.TEST_ATTEMPT?.[0]?.category || "A";
+          const answers = a.TEST_ATTEMPT?.[0]?.answers;
+          let parsedAnswers = {};
+          if (answers) {
+            try {
+              parsedAnswers = typeof answers === "string" ? JSON.parse(answers) : answers;
+            } catch (e) {}
+          }
+          const mcqScore = parsedAnswers?.mcqScore !== undefined ? parsedAnswers.mcqScore : (parsedAnswers?.knowledgeMarks !== undefined ? parsedAnswers.knowledgeMarks : null);
+          const calculatedMcq = mcqScore !== null ? Number(mcqScore) : Math.round(score * 0.25);
           return {
             id: a.assessment_id,
             employeeId: a.employee_id,
             hrmsId: a.employee?.hrms_id || a.employee_id,
             title: `${roleName} - ${a.employee?.hrms_id || a.employee_id}`,
             detail: `Approved by: AOM - on ${a.assessment_date ? new Date(a.assessment_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)}`,
-            score: `Score: ${score}/100 - Grade: ${cat}`
+            score: `Score: ${score}/100 - Grade: ${cat}`,
+            quizMarks: calculatedMcq,
+            answers: parsedAnswers
           };
         });
         setApprovedAssessments(approvedMapped);

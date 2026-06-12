@@ -20,24 +20,31 @@ export function StationMasterPointsmanDetail(props) {
 
   // Render score trend if user has a score, otherwise empty
   let personalScoreData = (history || [])
-    .filter(h => ["Approved", "Completed", "Submitted", "Pending"].includes(h.approvalStatus))
+    .filter(h => ["Approved", "Completed"].includes(h.approvalStatus))
     .map(h => ({
       month: h.date,
       score: h.totalScore
     }))
     .reverse(); // chronological order
 
-  if (personalScoreData.length === 0 && smProfile.score > 0) {
+  if (personalScoreData.length === 0 && smProfile.score > 0 && !history.some(h => ["Submitted", "Pending"].includes(h.approvalStatus))) {
     personalScoreData = [{ month: "Score", score: smProfile.score }];
   }
 
-  const latestApproved = (history || []).find(h => ["Approved", "Completed", "Submitted", "Pending"].includes(h.approvalStatus));
-  let score = smProfile.score || latestApproved?.totalScore || 0;
+  const latestApproved = (history || []).find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const hasUnapproved = (history || []).some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+
+  let score = latestApproved?.totalScore !== undefined && latestApproved?.totalScore !== null
+    ? latestApproved.totalScore
+    : (hasUnapproved ? 0 : (smProfile.score || 0));
+
   const computedCategory = latestApproved?.category || (score ? getCat(score) : null);
-  const category = smProfile.cat && smProfile.cat !== "Untested" ? smProfile.cat : (smProfile.category && smProfile.category !== "Untested" ? smProfile.category : (computedCategory || "Untested"));
+  const category = latestApproved?.category && latestApproved?.category !== "Untested"
+    ? latestApproved.category
+    : (hasUnapproved ? "Untested" : (smProfile.cat && smProfile.cat !== "Untested" ? smProfile.cat : (smProfile.category && smProfile.category !== "Untested" ? smProfile.category : (computedCategory || "Untested"))));
 
   const computedRisk = riskLevel({ ...smProfile, cat: category, score: score });
-  const risk = smProfile.risk && smProfile.risk !== "Untested" ? smProfile.risk : (smProfile.riskLevel && smProfile.riskLevel !== "Untested" ? smProfile.riskLevel : (computedRisk || "Untested"));
+  const risk = hasUnapproved ? "Untested" : (smProfile.risk && smProfile.risk !== "Untested" ? smProfile.risk : (smProfile.riskLevel && smProfile.riskLevel !== "Untested" ? smProfile.riskLevel : (computedRisk || "Untested")));
 
   return (
     <div className="sdom-fade">

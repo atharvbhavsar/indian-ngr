@@ -45,10 +45,13 @@ export default function SSMyAssessment({
   logActivity
 }) {
   const renderMyAssessment = () => {
+    const latestApprovedAttempt = history.find(h => h.approvalStatus === "Approved" || h.approvalStatus === "Completed");
+    const hasUnapproved = history.some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+
     /* Scorecard detail view */
     if (myAssessSelected) {
       const sc = myAssessSelected;
-      const isApproved = sc.approvalStatus === "Approved";
+      const isApproved = sc.approvalStatus === "Approved" || sc.approvalStatus === "Completed";
       const cat = isApproved ? getCategory(sc.totalScore) : "—";
       const liveTotal = sc.totalScore || 0;
       const performanceSummary = isApproved ? performanceSummaryText : "Official feedback and final grading will be updated once approved by the AOM.";
@@ -314,22 +317,41 @@ export default function SSMyAssessment({
               </div>
               <div className="sm2-report-mini">
                 <label>Latest Score</label>
-                <strong>{history[0] ? (history[0].approvalStatus === "Approved" ? `${history[0].totalScore}/100` : (history[0].isOnlineExam ? `${history[0].totalScore}/25` : "Pending")) : "—"}</strong>
+                <strong>{latestApprovedAttempt ? `${latestApprovedAttempt.totalScore}/${latestApprovedAttempt.isOnlineExam ? 25 : 100}` : (hasUnapproved ? "Awaiting Approval" : "—")}</strong>
               </div>
               <div className="sm2-report-mini">
                 <label>Average AOM Score</label>
                 <strong>{
                   (() => {
-                    const regs = history.filter(h => !h.isOnlineExam && h.approvalStatus === "Approved");
+                    const regs = history.filter(h => !h.isOnlineExam && ["Approved", "Completed"].includes(h.approvalStatus));
                     return regs.length ? `${Math.round(regs.reduce((s, a) => s + a.totalScore, 0) / regs.length)}/100` : "—";
                   })()
                 }</strong>
               </div>
               <div className="sm2-report-mini">
-                <label>Latest Assessment</label>
-                <strong style={{ color: history[0]?.approvalStatus === "Approved" ? getCategoryColor(getCategory(history[0]?.totalScore || 0)) : "#64748b" }}>
-                  {history[0] ? (history[0].approvalStatus === "Approved" ? `Category ${getCategory(history[0].totalScore)}` : "Awaiting Grading") : "—"}
-                </strong>
+                {(() => {
+                  const latest = latestApprovedAttempt;
+                  if (latest) {
+                    const finalCat = latest.dbCategory || latest.category || getCategory(latest.totalScore);
+                    return (
+                      <>
+                        <label>{latest.approvalStatus === "Approved" ? "AOM Approved Category" : "Latest Assessment"}</label>
+                        <strong style={{ color: getCategoryColor(finalCat) }}>
+                          {latest.isOnlineExam ? "Online CBT" : `Category ${finalCat}`}
+                        </strong>
+                      </>
+                    );
+                  } else {
+                    return (
+                      <>
+                        <label>Latest Assessment</label>
+                        <strong style={{ color: "#64748b" }}>
+                          {hasUnapproved ? "Awaiting Approval" : "—"}
+                        </strong>
+                      </>
+                    );
+                  }
+                })()}
               </div>
             </div>
 
@@ -340,25 +362,36 @@ export default function SSMyAssessment({
                   <span key={h}>{h}</span>)}
               </div>
               {history.map(sc => {
-                const isApproved = sc.approvalStatus === "Approved";
+                const isApproved = ["Approved", "Completed"].includes(sc.approvalStatus);
                 const cat = isApproved ? getCategory(sc.totalScore) : "—";
+                const outOf = sc.isOnlineExam ? 25 : 100;
+                const scoreDisplay = isApproved ? `${sc.totalScore}/${outOf}` : "—";
                 return (
-                  <button key={sc.id} className="sm2-myassess-row" onClick={() => setMyAssessSelected(sc)}>
+                  <button
+                    key={sc.id}
+                    className="sm2-myassess-row"
+                    onClick={() => isApproved && setMyAssessSelected(sc)}
+                    style={{ cursor: isApproved ? "pointer" : "default" }}
+                  >
                     <span title={`Cycle: ${sc.assessmentPeriod}\nDuration: ${formatQuarterPeriod(sc.assessmentPeriod)}`}>
                       <strong>{formatQuarterPeriod(sc.assessmentPeriod)}</strong>
                     </span>
                     <span>{sc.date}</span>
-                    <span><strong>{isApproved ? `${sc.totalScore}/100` : (sc.isOnlineExam ? `${sc.totalScore}/25` : "—")}</strong></span>
+                    <span><strong>{scoreDisplay}</strong></span>
                     <span>
-                      <span className="sm2-badge" style={{ background: isApproved ? getCategoryBg(cat) : "#f1f5f9", color: isApproved ? getCategoryColor(cat) : "#64748b" }}>
-                        {isApproved ? `Cat. ${cat}` : "—"}
-                      </span>
+                      {isApproved ? (
+                        <span className="sm2-badge" style={{ background: getCategoryBg(cat), color: getCategoryColor(cat) }}>
+                          {sc.isOnlineExam ? "CBT Exam" : `Cat. ${cat}`}
+                        </span>
+                      ) : (
+                        <span style={{ color: "#ea580c", fontSize: "12px", fontWeight: "600" }}>Awaiting Approval</span>
+                      )}
                     </span>
                     <span style={{ fontSize: 11, color: "#64748b" }}>{sc.assessedBy || "S. Deshmukh (TI)"}</span>
                     <span>
                       <span className={`sm2-status-pill sm2-status-${(sc.approvalStatus || "approved").toLowerCase()}`}>{sc.approvalStatus || "Approved"}</span>
                     </span>
-                    <span style={{ color: "#2563eb", fontSize: 12, fontWeight: 600 }}>View Form</span>
+                    <span style={{ color: isApproved ? "#2563eb" : "#94a3b8", fontSize: 12, fontWeight: 600 }}>{isApproved ? "View Form" : "—"}</span>
                   </button>
                 );
               })}
@@ -491,7 +524,7 @@ export default function SSMyAssessment({
               <tbody>
                 {paginatedHistory.map((record, index) => {
                   const absoluteIdx = filteredHistory.length - (startIndex + index);
-                  const isApproved = record.approvalStatus === "Approved";
+                  const isApproved = ["Approved", "Completed"].includes(record.approvalStatus);
                   const cat = isApproved ? getCategory(record.totalScore) : "—";
                   return (
                     <tr key={record.id} className="sdom-table-row-hover" style={{ borderBottom: "1px solid #f1f5f9", transition: "background 0.15s ease" }}>
@@ -499,22 +532,26 @@ export default function SSMyAssessment({
                       <td style={{ padding: "14px 18px", fontWeight: "600", color: "#334155" }}>{record.assessmentPeriod}</td>
                       <td style={{ padding: "14px 18px", color: "#64748b" }}>{record.date}</td>
                       <td style={{ padding: "14px 18px", fontWeight: "800", color: "#0f172a" }}>
-                        {isApproved ? `${record.totalScore} / 100` : (record.isOnlineExam ? `${record.totalScore} / 25` : "Awaiting Grading")}
+                        {isApproved ? `${record.totalScore} / 100` : "Awaiting Approval"}
                       </td>
                       <td style={{ padding: "14px 18px" }}>
-                        <span
-                          style={{
-                            background: isApproved ? getCategoryBg(cat) : "#f1f5f9",
-                            color: isApproved ? getCategoryColor(cat) : "#64748b",
-                            fontWeight: "800",
-                            fontSize: "12px",
-                            padding: "4px 10px",
-                            borderRadius: "6px",
-                            textTransform: "uppercase"
-                          }}
-                        >
-                          {isApproved ? `Cat. ${cat}` : "—"}
-                        </span>
+                        {isApproved ? (
+                          <span
+                            style={{
+                              background: getCategoryBg(cat),
+                              color: getCategoryColor(cat),
+                              fontWeight: "800",
+                              fontSize: "12px",
+                              padding: "4px 10px",
+                              borderRadius: "6px",
+                              textTransform: "uppercase"
+                            }}
+                          >
+                            Cat. {cat}
+                          </span>
+                        ) : (
+                          <span style={{ color: "#ea580c", fontSize: "12px", fontWeight: "600" }}>Awaiting Approval</span>
+                        )}
                       </td>
                       <td style={{ padding: "14px 18px", color: "#334155", fontWeight: "500" }}>{record.assessedBy || "AOM"}</td>
                       <td style={{ padding: "14px 18px" }}>
@@ -532,20 +569,21 @@ export default function SSMyAssessment({
                       </td>
                       <td style={{ padding: "14px 18px", textAlign: "right" }}>
                         <button
-                          onClick={() => openScorecard(record)}
+                          disabled={!isApproved}
+                          onClick={() => isApproved && openScorecard(record)}
                           style={{
-                            background: "#eff6ff",
-                            color: "#2563eb",
+                            background: isApproved ? "#eff6ff" : "#f1f5f9",
+                            color: isApproved ? "#2563eb" : "#94a3b8",
                             border: "none",
                             fontWeight: "700",
                             padding: "6px 14px",
                             borderRadius: "6px",
-                            cursor: "pointer",
+                            cursor: isApproved ? "pointer" : "not-allowed",
                             fontSize: "12.5px",
                             transition: "all 0.15s ease"
                           }}
                         >
-                          View Form
+                          {isApproved ? "View Form" : "—"}
                         </button>
                       </td>
                     </tr>

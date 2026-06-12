@@ -14,13 +14,19 @@ export function PointsmanHistoryPage({
   const { t } = useLanguage();
 
   // Top summary statistics calculated reactively:
+  const approvedHistory = history.filter(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const latestApprovedAttempt = history.find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const hasUnapproved = history.some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+
   const totalAssessments = history.length;
-  const latestScore = history.length ? history[0].totalScore : null;
-  const averageScore = history.length
-    ? Math.round(history.reduce((s, i) => s + (i.isOnlineExam ? (i.totalScore / 25) * 100 : i.totalScore), 0) / history.length)
+  const latestScore = latestApprovedAttempt ? latestApprovedAttempt.totalScore : null;
+  const averageScore = approvedHistory.length
+    ? Math.round(approvedHistory.reduce((s, i) => s + (i.isOnlineExam ? (i.totalScore / 25) * 100 : i.totalScore), 0) / approvedHistory.length)
     : 0;
-  const latestPct = history.length ? (history[0].isOnlineExam ? (latestScore / 25) * 100 : latestScore) : 0;
-  const latestCategory = (history.length && history[0].category) ? history[0].category : (latestScore !== null ? getCategory(latestPct) : "—");
+  const latestPct = latestApprovedAttempt ? (latestApprovedAttempt.isOnlineExam ? (latestScore / 25) * 100 : latestScore) : 0;
+  const latestCategory = latestApprovedAttempt
+    ? (latestApprovedAttempt.category || getCategory(latestPct))
+    : (hasUnapproved ? "Awaiting Approval" : "—");
 
   // Paginated history list
   const itemsPerPage = 5;
@@ -54,7 +60,9 @@ export function PointsmanHistoryPage({
           </div>
           <div>
             <div style={{ fontSize: "10.5px", color: "#64748b", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.4px" }}>{t("Latest Score")}</div>
-            <div style={{ fontSize: "18px", fontWeight: "800", color: "#0f172a", marginTop: "2px" }}>{latestScore !== null ? `${latestScore}/${history[0]?.isOnlineExam ? 25 : 100}` : "—"}</div>
+            <div style={{ fontSize: "18px", fontWeight: "800", color: "#0f172a", marginTop: "2px" }}>
+              {latestApprovedAttempt ? `${latestScore}/${latestApprovedAttempt.isOnlineExam ? 25 : 100}` : (hasUnapproved ? t("Awaiting Approval") : "—")}
+            </div>
           </div>
         </div>
 
@@ -75,7 +83,7 @@ export function PointsmanHistoryPage({
           <div>
             <div style={{ fontSize: "10.5px", color: "#64748b", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.4px" }}>{t("Latest Category")}</div>
             <div style={{ fontSize: "18px", fontWeight: "800", color: getCategoryColor(latestCategory), marginTop: "2px" }}>
-              {latestCategory !== "—" ? `${t("Cat.")} ${latestCategory}` : "—"}
+              {latestCategory !== "—" && latestCategory !== "Awaiting Approval" ? `${t("Cat.")} ${latestCategory}` : latestCategory}
             </div>
           </div>
         </div>
@@ -133,42 +141,54 @@ export function PointsmanHistoryPage({
             <tbody>
               {paginatedHistory.map((record, index) => {
                 const absoluteIdx = filteredHistory.length - (startIndex + index);
-                const cat = record.category || getCategory(record.isOnlineExam ? (record.totalScore / 25) * 100 : record.totalScore);
+                const isApproved = ["Approved", "Completed"].includes(record.approvalStatus);
+                const cat = isApproved ? (record.category || getCategory(record.isOnlineExam ? (record.totalScore / 25) * 100 : record.totalScore)) : "—";
+                const outOf = record.isOnlineExam ? 25 : 100;
+                const scoreDisplay = isApproved ? `${record.totalScore} / ${outOf}` : "Awaiting Approval";
                 return (
                   <tr key={record.id} className="sdom-table-row-hover" style={{ borderBottom: "1px solid #f1f5f9", transition: "background 0.15s ease" }}>
                     <td style={{ padding: "14px 18px", fontWeight: "700", color: "#1e3a8a" }}>#{absoluteIdx}</td>
                     <td style={{ padding: "14px 18px", fontWeight: "600", color: "#334155" }}>{t(record.assessmentPeriod)}</td>
                     <td style={{ padding: "14px 18px", color: "#64748b" }}>{record.date}</td>
-                    <td style={{ padding: "14px 18px", fontWeight: "800", color: "#0f172a" }}>{record.totalScore} / {record.isOnlineExam ? 25 : 100}</td>
+                    <td style={{ padding: "14px 18px", fontWeight: "800", color: "#0f172a" }}>{scoreDisplay}</td>
                     <td style={{ padding: "14px 18px" }}>
-                      {record.approvalStatus === "Pending" ? (
-                        <span style={{ background: "#fef3c7", color: "#d97706", fontWeight: "800", fontSize: "12px", padding: "4px 10px", borderRadius: "6px", textTransform: "uppercase" }}>{t("Eval Pending")}</span>
-                      ) : (
+                      {isApproved ? (
                         <span style={{ background: getCategoryBg(cat), color: getCategoryColor(cat), fontWeight: "800", fontSize: "12px", padding: "4px 10px", borderRadius: "6px", textTransform: "uppercase" }}>{t("Cat.")} {cat}</span>
+                      ) : (
+                        <span style={{ color: "#ea580c", fontSize: "12px", fontWeight: "600" }}>{t("Awaiting Approval")}</span>
                       )}
                     </td>
                     <td style={{ padding: "14px 18px", color: "#334155", fontWeight: "500" }}>{t(record.assessedBy || "S. Deshmukh (SM)")}</td>
                     <td style={{ padding: "14px 18px" }}>
-                      <span style={{ background: record.approvalStatus === "Pending" ? "#fef3c7" : "#dcfce7", color: record.approvalStatus === "Pending" ? "#d97706" : "#15803d", fontWeight: "700", fontSize: "11px", padding: "4px 8px", borderRadius: "20px", textTransform: "uppercase" }}>
+                      <span style={{
+                        background: isApproved ? "#dcfce7" : "#fffbeb",
+                        color: isApproved ? "#15803d" : "#b45309",
+                        fontWeight: "700",
+                        fontSize: "11px",
+                        padding: "4px 8px",
+                        borderRadius: "20px",
+                        textTransform: "uppercase"
+                      }}>
                         {t(record.approvalStatus || "Approved")}
                       </span>
                     </td>
                     <td style={{ padding: "14px 18px", textAlign: "right" }}>
                       <button 
-                        onClick={() => openScorecard(record)}
+                        disabled={!isApproved}
+                        onClick={() => isApproved && openScorecard(record)}
                         style={{ 
-                          background: "#eff6ff", 
-                          color: "#2563eb", 
+                          background: isApproved ? "#eff6ff" : "#f1f5f9", 
+                          color: isApproved ? "#2563eb" : "#94a3b8", 
                           border: "none", 
                           fontWeight: "700", 
                           padding: "6px 14px", 
                           borderRadius: "6px", 
-                          cursor: "pointer", 
+                          cursor: isApproved ? "pointer" : "not-allowed", 
                           fontSize: "12.5px",
                           transition: "all 0.15s ease" 
                         }}
                       >
-                        {t("View Form")}
+                        {isApproved ? t("View Form") : "—"}
                       </button>
                     </td>
                   </tr>

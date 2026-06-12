@@ -116,9 +116,9 @@ export function TMMyAssessment({
     }
     
     setViewMode("dashboard");
-    setStatusText(`Assessment submitted! Score: ${correctCount}/25 (${percentage}%). Status: Completed.`);
+    setStatusText("Assessment submitted successfully! Awaiting AOM approval.");
     logActivity("Assessment", `Submitted test with score ${correctCount}/25 (${percentage}%)`);
-    triggerNotification("success", `Assessment complete! Score: ${correctCount}/25 (${percentage}%). Grade: Category ${getCategory(correctCount * 4)}`);
+    triggerNotification("success", "Assessment submitted! Awaiting AOM approval.");
   };
 
   /* ─── Dynamic Performance Summary ─── */
@@ -410,6 +410,9 @@ export function TMMyAssessment({
   const isTestActivated = localStorage.getItem("tm_test_activated_" + employeeId) === "true";
   const testActive = isTestActivated && testAssigned === "Assigned" && (!tmMcqTest || !tmMcqTest.completed);
 
+  const latestApprovedAttempt = history.find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const hasUnapproved = history.some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+
   return (
     <section className="sm2-card">
       {/* MCQ Assessment Assignment Banner */}
@@ -530,12 +533,16 @@ export function TMMyAssessment({
           <div style={{display:"flex", gap:16, fontSize:12, textAlign:"right"}}>
             <div>
               <span style={{color:"#166534", display:"block"}}>Last Exam Score</span>
-              <strong style={{color:"#14532d", fontSize:13}}>{tmMcqTest ? `${tmMcqTest.percentage}%` : (history[0]?.totalScore ? `${history[0]?.totalScore}%` : "—")}</strong>
+              <strong style={{color:"#14532d", fontSize:13}}>{latestApprovedAttempt ? `${latestApprovedAttempt.totalScore}%` : (hasUnapproved ? "Awaiting Approval" : "—")}</strong>
             </div>
-            <div style={{borderLeft:"1px solid #bbf7d0", paddingLeft:16}}>
-              <span style={{color:"#166534", display:"block"}}>Next Due Date</span>
-              <strong style={{color:"#14532d", fontSize:13}}>25 Sep 2026</strong>
-            </div>
+            {latestApprovedAttempt && (
+              <div style={{borderLeft:"1px solid #bbf7d0", paddingLeft:16}}>
+                <span style={{color:"#166534", display:"block"}}>Next Due Date</span>
+                <strong style={{color:"#14532d", fontSize:13}}>
+                  {new Date(new Date(latestApprovedAttempt.date).setMonth(new Date(latestApprovedAttempt.date).getMonth() + 6)).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'})}
+                </strong>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -559,13 +566,13 @@ export function TMMyAssessment({
             </div>
             <div className="sm2-report-mini">
               <label>Latest Score</label>
-              <strong>{history[0]?.totalScore ?? "—"}/{history[0]?.isOnlineExam ? 25 : 100}</strong>
+              <strong>{latestApprovedAttempt ? `${latestApprovedAttempt.totalScore}/${latestApprovedAttempt.isOnlineExam ? 25 : 100}` : (hasUnapproved ? "Awaiting Approval" : "—")}</strong>
             </div>
             <div className="sm2-report-mini">
               <label>Average TI Score</label>
               <strong>{
                 (() => {
-                  const regs = history.filter(h => !h.isOnlineExam);
+                  const regs = history.filter(h => !h.isOnlineExam && ["Approved", "Completed"].includes(h.approvalStatus));
                   return regs.length ? `${Math.round(regs.reduce((s, a) => s + a.totalScore, 0) / regs.length)}/100` : "—";
                 })()
               }</strong>
@@ -573,18 +580,27 @@ export function TMMyAssessment({
             <div className="sm2-report-mini">
               {/* Use AOM-approved category from DB when assessment is approved */}
               {(() => {
-                const latest = history.find(h => !h.isOnlineExam) || history[0];
-                const localCat = getCategory(latest?.isOnlineExam ? (latest?.totalScore || 0) * 4 : (latest?.totalScore || 0));
-                const finalCat = (latest?.isApproved && latest?.dbCategory) ? latest.dbCategory : localCat;
-                const isAomApproved = latest?.isApproved && latest?.dbCategory;
-                return (
-                  <>
-                    <label>{isAomApproved ? "AOM Approved Category" : "Latest Assessment"}</label>
-                    <strong style={{color: getCategoryColor(finalCat)}}>
-                      {latest?.isOnlineExam ? "Online CBT" : `Category ${finalCat}`}
-                    </strong>
-                  </>
-                );
+                const latest = latestApprovedAttempt;
+                if (latest) {
+                  const finalCat = latest.dbCategory || latest.category || getCategory(latest.isOnlineExam ? latest.totalScore * 4 : latest.totalScore);
+                  return (
+                    <>
+                      <label>{latest.isApproved ? "AOM Approved Category" : "Latest Assessment"}</label>
+                      <strong style={{color: getCategoryColor(finalCat)}}>
+                        {latest.isOnlineExam ? "Online CBT" : `Category ${finalCat}`}
+                      </strong>
+                    </>
+                  );
+                } else {
+                  return (
+                    <>
+                      <label>Latest Assessment</label>
+                      <strong style={{color: "#64748b"}}>
+                        {hasUnapproved ? "Awaiting Approval" : "—"}
+                      </strong>
+                    </>
+                  );
+                }
               })()}
             </div>
           </div>
@@ -596,28 +612,39 @@ export function TMMyAssessment({
                 <span key={h}>{h}</span>)}
             </div>
             {history.map(sc => {
+              const isApproved = ["Approved", "Completed"].includes(sc.approvalStatus);
               // Use AOM-approved category from DB if available, otherwise calculate locally
               const localCat = getCategory(sc.isOnlineExam ? sc.totalScore * 4 : sc.totalScore);
               const cat = (sc.isApproved && sc.dbCategory) ? sc.dbCategory : localCat;
               // Score display: for TI field evaluation always show out of 100
               const outOf = sc.isOnlineExam ? 25 : 100;
+              const scoreDisplay = isApproved ? `${sc.totalScore}/${outOf}` : "—";
               return (
-                <button key={sc.id} className="sm2-myassess-row" onClick={() => setMyAssessSelected(sc)}>
+                <button 
+                  key={sc.id} 
+                  className="sm2-myassess-row" 
+                  onClick={() => isApproved && setMyAssessSelected(sc)}
+                  style={{ cursor: isApproved ? "pointer" : "default" }}
+                >
                   <span title={`Cycle: ${sc.assessmentPeriod}\nDuration: ${formatQuarterPeriod(sc.assessmentPeriod)}`}>
                     <strong>{formatQuarterPeriod(sc.assessmentPeriod)}</strong>
                   </span>
                   <span>{sc.date}</span>
-                  <span><strong>{sc.totalScore}/{outOf}</strong></span>
+                  <span><strong>{scoreDisplay}</strong></span>
                   <span>
-                    <span className="sm2-badge" style={{background:getCategoryBg(cat),color:getCategoryColor(cat)}}>
-                      {sc.isOnlineExam ? "CBT Exam" : `Cat. ${cat}`}
-                    </span>
+                    {isApproved ? (
+                      <span className="sm2-badge" style={{background:getCategoryBg(cat),color:getCategoryColor(cat)}}>
+                        {sc.isOnlineExam ? "CBT Exam" : `Cat. ${cat}`}
+                      </span>
+                    ) : (
+                      <span style={{ color: "#ea580c", fontSize: "12px", fontWeight: "600" }}>Awaiting Approval</span>
+                    )}
                   </span>
                   <span style={{fontSize:11,color:"#64748b"}}>{sc.assessedBy || "TI_1001 (Traffic Inspector)"}</span>
                   <span>
                     <span className={`sm2-status-pill sm2-status-${(sc.approvalStatus || "approved").toLowerCase()}`}>{sc.approvalStatus || "Approved"}</span>
                   </span>
-                  <span style={{color:"#2563eb",fontSize:12,fontWeight:600}}>View Form</span>
+                  <span style={{color: isApproved ? "#2563eb" : "#94a3b8", fontSize:12, fontWeight:600}}>{isApproved ? "View Form" : "—"}</span>
                 </button>
               );
             })}

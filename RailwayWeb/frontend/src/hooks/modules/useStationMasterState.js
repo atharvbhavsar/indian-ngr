@@ -523,35 +523,79 @@ export function useStationMasterState(user, onLogout) {
         // Fetch active/pending assessments for this user
         const { data: assessments, error } = await supabase
           .from('ASSESSMENT')
-          .select('assessment_id, status, assessment_type, conducted_by')
+          .select('assessment_id, status, assessment_type, conducted_by, due_date')
           .eq('employee_id', resolvedEmployeeId)
-          .in('assessment_type', ['Station Master Assessment', 'SM Assessment'])
           .in('status', ['Pending', 'AVAILABLE', 'LOCKED', 'IN_PROGRESS'])
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .order('created_at', { ascending: false });
 
         const activatedTime = Number(localStorage.getItem(`sm_test_activated_time_${smId}`)) || 0;
         const isRecent = Date.now() - activatedTime < 15000; // 15 seconds guard
 
-        if (!error && assessments && assessments.length > 0) {
-          const activeAssess = assessments[0];
-          if (activeAssess.status === 'Pending' || activeAssess.status === 'AVAILABLE' || activeAssess.status === 'IN_PROGRESS') {
-            const currentActivated = localStorage.getItem(`sm_test_activated_${smId}`);
-            if (currentActivated !== "true") {
-              localStorage.setItem(`sm_test_activated_${smId}`, "true");
-              window.dispatchEvent(new Event("storage"));
+        if (!error && assessments) {
+          const smAssessments = assessments.filter(a => {
+            const t = (a.assessment_type || "").toLowerCase();
+            return t.startsWith("station master") || t.startsWith("sm assessment") || t === "station master assessment";
+          });
+
+          if (smAssessments.length > 0) {
+            const activeAssess = smAssessments[0];
+            
+            let isActive = ['Pending', 'AVAILABLE', 'IN_PROGRESS'].includes(activeAssess.status);
+            if (!isActive && activeAssess.status === 'LOCKED' && activeAssess.due_date) {
+              let timeStr = "12:00 AM";
+              const tMatch = (activeAssess.assessment_type || "").match(/Time:\s*([^\n\r|]+)/i);
+              if (tMatch) timeStr = tMatch[1].trim();
+              
+              let hours = 0;
+              let minutes = 0;
+              const timeParts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+              if (timeParts) {
+                hours = parseInt(timeParts[1]);
+                minutes = parseInt(timeParts[2]);
+                const ampm = timeParts[3].toUpperCase();
+                if (ampm === "PM" && hours < 12) hours += 12;
+                if (ampm === "AM" && hours === 12) hours = 0;
+              } else {
+                const parts24 = timeStr.match(/(\d+):(\d+)/);
+                if (parts24) {
+                  hours = parseInt(parts24[1]);
+                  minutes = parseInt(parts24[2]);
+                }
+              }
+              
+              let year = 2026, month = 5, day = 12;
+              if (activeAssess.due_date.includes("-")) {
+                const parts = activeAssess.due_date.split("-");
+                if (parts[0].length === 4) {
+                  year = parseInt(parts[0]);
+                  month = parseInt(parts[1]) - 1;
+                  day = parseInt(parts[2]);
+                } else {
+                  day = parseInt(parts[0]);
+                  month = parseInt(parts[1]) - 1;
+                  year = parseInt(parts[2]);
+                }
+              }
+              const targetDate = new Date(year, month, day, hours, minutes, 0);
+              isActive = new Date() >= targetDate;
             }
-          } else {
-            if (!isRecent) {
+
+            if (isActive) {
               const currentActivated = localStorage.getItem(`sm_test_activated_${smId}`);
-              if (currentActivated !== "false") {
-                localStorage.setItem(`sm_test_activated_${smId}`, "false");
+              if (currentActivated !== "true") {
+                localStorage.setItem(`sm_test_activated_${smId}`, "true");
                 window.dispatchEvent(new Event("storage"));
               }
+            } else {
+              if (!isRecent) {
+                const currentActivated = localStorage.getItem(`sm_test_activated_${smId}`);
+                if (currentActivated !== "false") {
+                  localStorage.setItem(`sm_test_activated_${smId}`, "false");
+                  window.dispatchEvent(new Event("storage"));
+                }
+              }
             }
-          }
-        } else {
-          if (!error && assessments && assessments.length === 0) {
+          } else {
             if (!isRecent) {
               const currentActivated = localStorage.getItem(`sm_test_activated_${smId}`);
               if (currentActivated !== "false") {
@@ -1137,7 +1181,7 @@ export function useStationMasterState(user, onLogout) {
           .from("ASSESSMENT")
           .select("assessment_id, due_date, assessment_type")
           .eq("employee_id", pmUserUuid)
-          .in("status", ["LOCKED", "AVAILABLE", "IN_PROGRESS", "Pending"])
+          .in("status", ["LOCKED", "AVAILABLE", "IN_PROGRESS", "Pending", "Draft", "Scheduled"])
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();

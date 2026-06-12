@@ -440,34 +440,78 @@ function PointsmanModule({ user, onLogout }) {
         // Fetch active/pending assessments for this user
         const { data: assessments, error } = await supabase
           .from('ASSESSMENT')
-          .select('assessment_id, status, assessment_type')
+          .select('assessment_id, status, assessment_type, due_date')
           .eq('employee_id', resolvedEmployeeId)
-          .in('assessment_type', ['Checklist Evaluation', 'Pointsman Evaluation', 'Pointsman Periodic Assessment', 'Competency Assessment'])
           .in('status', ['Pending', 'AVAILABLE', 'LOCKED', 'IN_PROGRESS'])
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .order('created_at', { ascending: false });
 
-        if (!error && assessments && assessments.length > 0) {
-          const activeAssess = assessments[0];
-          if (activeAssess.status === 'Pending' || activeAssess.status === 'AVAILABLE' || activeAssess.status === 'IN_PROGRESS') {
-            const currentActivated = localStorage.getItem(`pm_test_activated_${employeeId}`);
-            if (currentActivated !== "true") {
-              localStorage.setItem(`pm_test_activated_${employeeId}`, "true");
-              window.dispatchEvent(new Event("storage"));
+        if (!error && assessments) {
+          const pmAssessments = assessments.filter(a => {
+            const t = (a.assessment_type || "").toLowerCase();
+            return t.includes("checklist") || t.includes("pointsman") || t.includes("competency");
+          });
+
+          if (pmAssessments.length > 0) {
+            const activeAssess = pmAssessments[0];
+            
+            let isActive = ['Pending', 'AVAILABLE', 'IN_PROGRESS'].includes(activeAssess.status);
+            if (!isActive && activeAssess.status === 'LOCKED' && activeAssess.due_date) {
+              let timeStr = "12:00 AM";
+              const tMatch = (activeAssess.assessment_type || "").match(/Time:\s*([^\n\r|]+)/i);
+              if (tMatch) timeStr = tMatch[1].trim();
+              
+              let hours = 0;
+              let minutes = 0;
+              const timeParts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+              if (timeParts) {
+                hours = parseInt(timeParts[1]);
+                minutes = parseInt(timeParts[2]);
+                const ampm = timeParts[3].toUpperCase();
+                if (ampm === "PM" && hours < 12) hours += 12;
+                if (ampm === "AM" && hours === 12) hours = 0;
+              } else {
+                const parts24 = timeStr.match(/(\d+):(\d+)/);
+                if (parts24) {
+                  hours = parseInt(parts24[1]);
+                  minutes = parseInt(parts24[2]);
+                }
+              }
+              
+              let year = 2026, month = 5, day = 12;
+              if (activeAssess.due_date.includes("-")) {
+                const parts = activeAssess.due_date.split("-");
+                if (parts[0].length === 4) {
+                  year = parseInt(parts[0]);
+                  month = parseInt(parts[1]) - 1;
+                  day = parseInt(parts[2]);
+                } else {
+                  day = parseInt(parts[0]);
+                  month = parseInt(parts[1]) - 1;
+                  year = parseInt(parts[2]);
+                }
+              }
+              const targetDate = new Date(year, month, day, hours, minutes, 0);
+              isActive = new Date() >= targetDate;
             }
-            if (testAssigned !== "Assigned") {
-              setTestAssigned("Assigned");
-              localStorage.setItem(`pm_test_assigned_${employeeId}`, "Assigned");
+
+            if (isActive) {
+              const currentActivated = localStorage.getItem(`pm_test_activated_${employeeId}`);
+              if (currentActivated !== "true") {
+                localStorage.setItem(`pm_test_activated_${employeeId}`, "true");
+                window.dispatchEvent(new Event("storage"));
+              }
+              if (testAssigned !== "Assigned") {
+                setTestAssigned("Assigned");
+                localStorage.setItem(`pm_test_assigned_${employeeId}`, "Assigned");
+              }
+            } else {
+              const currentActivated = localStorage.getItem(`pm_test_activated_${employeeId}`);
+              if (currentActivated !== "false") {
+                localStorage.setItem(`pm_test_activated_${employeeId}`, "false");
+                window.dispatchEvent(new Event("storage"));
+              }
             }
           } else {
-            const currentActivated = localStorage.getItem(`pm_test_activated_${employeeId}`);
-            if (currentActivated !== "false") {
-              localStorage.setItem(`pm_test_activated_${employeeId}`, "false");
-              window.dispatchEvent(new Event("storage"));
-            }
-          }
-        } else {
-          if (!error && assessments && assessments.length === 0) {
             const currentActivated = localStorage.getItem(`pm_test_activated_${employeeId}`);
             if (currentActivated !== "false") {
               localStorage.setItem(`pm_test_activated_${employeeId}`, "false");
@@ -521,11 +565,23 @@ function PointsmanModule({ user, onLogout }) {
     return () => clearInterval(timer);
   }, [isAssessmentTimerRunning, assessmentTimeLeft]);
   /* ─── Derived metrics ─── */
-  const latestEvaluated = history.find(h => !h.approvalStatus || h.approvalStatus !== "Pending");
-  const latestScore = latestEvaluated ? latestEvaluated.totalScore : null;
-  const latestCategory = latestEvaluated ? (latestEvaluated.category || getCategory(latestEvaluated.isOnlineExam ? (latestScore/25)*100 : latestScore)) : "—";
-  const averageScore = history.length
-    ? history.reduce((s, i) => s + (i.isOnlineExam ? (i.totalScore/25)*100 : i.totalScore), 0) / history.length
+  const approvedHistory = useMemo(() => {
+    return history.filter(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  }, [history]);
+
+  const latestApprovedAttempt = history.find(h => ["Approved", "Completed"].includes(h.approvalStatus));
+  const hasUnapproved = history.some(h => ["Submitted", "Pending"].includes(h.approvalStatus));
+
+  const latestScore = latestApprovedAttempt
+    ? latestApprovedAttempt.totalScore
+    : (hasUnapproved ? "Awaiting Approval" : null);
+
+  const latestCategory = latestApprovedAttempt
+    ? (latestApprovedAttempt.category || getCategory(latestApprovedAttempt.isOnlineExam ? (latestApprovedAttempt.totalScore/25)*100 : latestApprovedAttempt.totalScore))
+    : (hasUnapproved ? "Awaiting Approval" : "—");
+
+  const averageScore = approvedHistory.length
+    ? Math.round(approvedHistory.reduce((s, i) => s + (i.isOnlineExam ? (i.totalScore/25)*100 : i.totalScore), 0) / approvedHistory.length)
     : 0;
   const answeredCount = responses.filter(v => v !== null).length;
   const completionRate = Math.round((answeredCount / 25) * 100);
@@ -935,7 +991,7 @@ function PointsmanModule({ user, onLogout }) {
   const renderDashboardPage = () => (
     <PointsmanDashboard 
       latestScore={latestScore}
-      latestOutOf={latestEvaluated ? (latestEvaluated.isOnlineExam ? 25 : 100) : 100}
+      latestOutOf={latestApprovedAttempt ? (latestApprovedAttempt.isOnlineExam ? 25 : 100) : 100}
       averageScore={averageScore}
       latestCategory={latestCategory}
       historyLength={history.length}
@@ -954,7 +1010,7 @@ function PointsmanModule({ user, onLogout }) {
       profile={profile}
       latestCategory={latestCategory}
       latestScore={latestScore}
-      latestOutOf={latestEvaluated ? (latestEvaluated.isOnlineExam ? 25 : 100) : 100}
+      latestOutOf={latestApprovedAttempt ? (latestApprovedAttempt.isOnlineExam ? 25 : 100) : 100}
       employeeId={employeeId}
     />
   );
