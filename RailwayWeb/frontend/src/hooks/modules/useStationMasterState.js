@@ -786,10 +786,19 @@ export function useStationMasterState(user, onLogout) {
   const openAssessForm = (draft) => {
     setAssessTarget(draft);
 
-    // Load MCQ score if it exists in localStorage
+    // Load MCQ score if it exists in localStorage or database
     const mcqDataStr = localStorage.getItem(`pm_mcq_test_${draft.hrmsId}`);
     const mcqData = mcqDataStr ? JSON.parse(mcqDataStr) : null;
-    const initialMcqMarks = mcqData && mcqData.completed ? String(mcqData.correctCount) : "0";
+    const dbSubmission = submittedAssessments ? submittedAssessments.find(s => s.pmId === draft.hrmsId) : null;
+
+    let initialMcqMarks = "0";
+    if (mcqData && mcqData.completed) {
+      initialMcqMarks = String(mcqData.correctCount);
+    } else if (dbSubmission) {
+      initialMcqMarks = String(dbSubmission.score);
+    } else if (draft.score !== null && draft.score !== undefined && draft.score !== 0) {
+      initialMcqMarks = String(draft.score);
+    }
 
     setAssessForm({
       ...defaultAssessForm,
@@ -1145,6 +1154,42 @@ export function useStationMasterState(user, onLogout) {
       setStatusMsg("Batch assessment access failed.");
     }
   };
+  const deactivateAssessmentAccess = async (hrmsId) => {
+    if (!hrmsId) return;
+    setStatusMsg("Deactivating assessment access...");
+    try {
+      localStorage.setItem(`pm_test_activated_${hrmsId}`, "false");
+      localStorage.setItem(`pm_test_assigned_${hrmsId}`, "None");
+      localStorage.setItem(`pm_test_activated_time_${hrmsId}`, Date.now().toString());
+
+      if (isSupabaseConfigured) {
+        const { data: pmUser, error: pmErr } = await supabase
+          .from("USERS")
+          .select("user_id")
+          .eq("hrms_id", hrmsId)
+          .single();
+
+        if (!pmErr && pmUser?.user_id) {
+          const pmUserUuid = pmUser.user_id;
+
+          await supabase
+            .from("ASSESSMENT")
+            .update({
+              status: "LOCKED"
+            })
+            .eq("employee_id", pmUserUuid)
+            .in("status", ["AVAILABLE", "IN_PROGRESS"]);
+        }
+      }
+
+      window.dispatchEvent(new Event("storage"));
+      await fetchLiveDatabaseData();
+      setStatusMsg("Successfully deactivated assessment access.");
+    } catch (err) {
+      console.error("Error in deactivation:", err);
+      alert("Error deactivating assessment access: " + err.message);
+    }
+  };
 
   const updateEmployeeSchedule = async (hrmsId, date, time, reason) => {
     if (!hrmsId || !date) return { success: false, error: "Missing required fields" };
@@ -1431,7 +1476,7 @@ export function useStationMasterState(user, onLogout) {
     selectedCategory, setSelectedCategory,
     searchHrms, setSearchHrms,
     selectedHrmsIds, setSelectedHrmsIds,
-    sendBatchAssessmentAccess,
+    sendBatchAssessmentAccess, deactivateAssessmentAccess,
     allDbAssessments, setAllDbAssessments,
     updateEmployeeSchedule
   };

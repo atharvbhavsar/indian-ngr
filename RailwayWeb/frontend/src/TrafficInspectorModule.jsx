@@ -361,8 +361,8 @@ export default function TrafficInspectorModule({ user, onLogout }) {
     showAddUserModal, setShowAddUserModal, newUserData, setNewUserData,
 
     handleAddStationSubmit, openAddUserModal, handleAddUserSubmit, handleEditUser, saveEditedUser, handleDeleteUser, handleTransferClick, confirmTransfer,
-    openPmReview, updateSec, finalizePM, openSMForm, handleSendExamAccess, toggleSMYN, setSMField, submitSMAssessment, openTMForm, handleSendTMExamAccess, toggleTMYN, setTMField, submitTMAssessment,
-    openSSForm, handleSendSSExamAccess, toggleSSYN, setSSField, submitSSAssessment, submitInspection, submitCounselling, startQuiz, handleSelectQuizOpt, submitQuiz, markAllNotificationsRead,
+    openPmReview, updateSec, finalizePM, openSMForm, handleSendExamAccess, handleRevokeExamAccess, toggleSMYN, setSMField, submitSMAssessment, openTMForm, handleSendTMExamAccess, handleRevokeTMExamAccess, toggleTMYN, setTMField, submitTMAssessment,
+    openSSForm, handleSendSSExamAccess, handleRevokeSSExamAccess, toggleSSYN, setSSField, submitSSAssessment, submitInspection, submitCounselling, startQuiz, handleSelectQuizOpt, submitQuiz, markAllNotificationsRead,
     allDbAssessments, selectedCategory, setSelectedCategory, selectedHrmsIds, setSelectedHrmsIds, viewUpcomingOnly, setViewUpcomingOnly,
     sendBatchExamAccess, updateEmployeeScheduleTI
   } = useTrafficInspectorState(user, onLogout);
@@ -2687,7 +2687,7 @@ export default function TrafficInspectorModule({ user, onLogout }) {
       const dbExamScore = sm?.examScore !== undefined && sm?.examScore !== null
         ? (sm.examScore > 25 ? Math.round(sm.examScore / 4) : sm.examScore)
         : null;
-      const isMcqCompleted = !!(mcqData && mcqData.completed) || dbExamScore !== null || sm?.status === "Submitted" || sm?.status === "Approved";
+      const isMcqCompleted = !!(mcqData && mcqData.completed) || dbExamScore !== null || ["Submitted", "Approved", "Exam Taken", "Completed", "EVALUATED"].includes(sm?.status);
       const isActivated = localStorage.getItem(`sm_test_activated_${sm?.hrmsId}`) === "true";
 
       const knowledge = dbExamScore !== null
@@ -3057,7 +3057,7 @@ export default function TrafficInspectorModule({ user, onLogout }) {
       const dbExamScore = ss?.examScore !== undefined && ss?.examScore !== null
         ? (ss.examScore > 25 ? Math.round(ss.examScore / 4) : ss.examScore)
         : null;
-      const isMcqCompleted = !!(mcqData && mcqData.completed) || dbExamScore !== null || ss?.status === "Submitted" || ss?.status === "Approved";
+      const isMcqCompleted = !!(mcqData && mcqData.completed) || dbExamScore !== null || ["Submitted", "Approved", "Exam Taken", "Completed", "EVALUATED"].includes(ss?.status);
       const isActivated = localStorage.getItem(`ss_test_activated_${ss?.hrmsId}`) === "true";
 
       const knowledge = dbExamScore !== null
@@ -3422,7 +3422,7 @@ export default function TrafficInspectorModule({ user, onLogout }) {
       const dbExamScore = tm?.examScore !== undefined && tm?.examScore !== null
         ? (tm.examScore > 25 ? Math.round(tm.examScore / 4) : tm.examScore)
         : null;
-      const isMcqCompleted = !!(mcqData && mcqData.completed) || dbExamScore !== null || tm?.status === "Submitted" || tm?.status === "Approved";
+      const isMcqCompleted = !!(mcqData && mcqData.completed) || dbExamScore !== null || ["Submitted", "Approved", "Exam Taken", "Completed", "EVALUATED"].includes(tm?.status);
       const isActivated = localStorage.getItem(`tm_test_activated_${tm?.hrmsId}`) === "true";
 
       const knowledge = dbExamScore !== null
@@ -3569,16 +3569,17 @@ export default function TrafficInspectorModule({ user, onLogout }) {
                           color: isActivated ? "#dc2626" : "#ffffff",
                           boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
                         }}
-                        onClick={() => {
-                          const nextVal = !isActivated;
-                          localStorage.setItem(`tm_test_activated_${tm?.hrmsId}`, nextVal ? "true" : "false");
+                        onClick={async () => {
+                          if (isActivated) {
+                            await handleRevokeTMExamAccess(tm?.id);
+                          } else {
+                            await handleSendTMExamAccess(tm?.id);
+                          }
                           setTMField(activeTmId, "automaticTraining", f.automaticTraining);
                         }}
                       >
                         {isActivated ? "Deactivate Safety Competency Exam" : "Activate Safety Competency Exam"}
                       </button>
-
-
                     </div>
 
                     <div className="sm2-mcq-meta-grid">
@@ -4550,7 +4551,7 @@ export default function TrafficInspectorModule({ user, onLogout }) {
 
       // Status text evaluator
       const getEmpStatusText = (p) => {
-        const keyPrefix = roleKey === "SM" ? "sm" : "tm";
+        const keyPrefix = roleKey === "SM" ? "sm" : roleKey === "SS" ? "ss" : "tm";
         const mcqDataStr = localStorage.getItem(`${keyPrefix}_mcq_test_${p.hrmsId}`);
         const mcqData = mcqDataStr ? JSON.parse(mcqDataStr) : null;
 

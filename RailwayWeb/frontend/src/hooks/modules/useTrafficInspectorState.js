@@ -1599,6 +1599,30 @@ export function useTrafficInspectorState(user, onLogout) {
     triggerNotification("success", `Exam unlocked for SM ${sm?.name}. They must complete 25 MCQ questions.`);
   };
 
+  const handleRevokeExamAccess = async (id) => {
+    const sm = smList.find(s => s.id === id);
+    if (sm?.hrmsId) {
+      localStorage.setItem(`sm_test_activated_${sm.hrmsId}`, "false");
+      localStorage.setItem(`sm_test_assigned_${sm.hrmsId}`, "None");
+      window.dispatchEvent(new Event("storage"));
+
+      if (isSupabaseConfigured) {
+        try {
+          await supabase
+            .from("ASSESSMENT")
+            .update({ status: "LOCKED" })
+            .eq("employee_id", id)
+            .in("status", ["AVAILABLE", "IN_PROGRESS"]);
+        } catch (dbErr) {
+          console.error("Failed to update database assessment status to LOCKED:", dbErr);
+        }
+      }
+    }
+    setSmList(prev => prev.map(s => s.id === id ? { ...s, status: "Exam Locked" } : s));
+    setStatusMsg("Test has been locked.");
+    addAuditLog("Revoked Exam Access", `Exam locked for SM: ${sm?.name} (${sm?.hrmsId})`);
+  };
+
   const toggleSMYN = (id, key, idx, val) => {
     if (smLocked[id]) return;
     setSmForms(p => ({
@@ -1915,6 +1939,30 @@ export function useTrafficInspectorState(user, onLogout) {
     triggerNotification("success", `Exam unlocked for TM ${tm?.name}. They must complete 25 MCQ questions.`);
   };
 
+  const handleRevokeTMExamAccess = async (id) => {
+    const tm = tmList.find(t => t.id === id);
+    if (tm?.hrmsId) {
+      localStorage.setItem(`tm_test_activated_${tm.hrmsId}`, "false");
+      localStorage.setItem(`tm_test_assigned_${tm.hrmsId}`, "None");
+      window.dispatchEvent(new Event("storage"));
+
+      if (isSupabaseConfigured) {
+        try {
+          await supabase
+            .from("ASSESSMENT")
+            .update({ status: "LOCKED" })
+            .eq("employee_id", id)
+            .in("status", ["AVAILABLE", "IN_PROGRESS"]);
+        } catch (dbErr) {
+          console.error("Failed to update database assessment status to LOCKED:", dbErr);
+        }
+      }
+    }
+    setTmList(prev => prev.map(t => t.id === id ? { ...t, status: "Exam Locked" } : t));
+    setStatusMsg("Test has been locked.");
+    addAuditLog("Revoked Exam Access", `Exam locked for TM: ${tm?.name} (${tm?.hrmsId})`);
+  };
+
   const toggleTMYN = (id, key, idx, val) => {
     if (tmLocked[id]) return;
     setTmForms(p => ({
@@ -2229,6 +2277,30 @@ export function useTrafficInspectorState(user, onLogout) {
     window.alert("test is been send");
     setStatusMsg("test is been send");
     triggerNotification("info", "Exam access link sent to Station Superintendent.");
+  };
+
+  const handleRevokeSSExamAccess = async (id) => {
+    const ss = ssList.find(s => s.id === id);
+    if (ss?.hrmsId) {
+      localStorage.setItem(`ss_test_activated_${ss.hrmsId}`, "false");
+      localStorage.setItem(`ss_test_assigned_${ss.hrmsId}`, "None");
+      window.dispatchEvent(new Event("storage"));
+
+      if (isSupabaseConfigured) {
+        try {
+          await supabase
+            .from("ASSESSMENT")
+            .update({ status: "LOCKED" })
+            .eq("employee_id", id)
+            .in("status", ["AVAILABLE", "IN_PROGRESS"]);
+        } catch (dbErr) {
+          console.error("Failed to update database assessment status to LOCKED:", dbErr);
+        }
+      }
+    }
+    setSsList(prev => prev.map(s => s.id === id ? { ...s, status: "Exam Locked" } : s));
+    setStatusMsg("Test has been locked.");
+    addAuditLog("Revoked Exam Access", `Exam locked for SS: ${ss?.name} (${ss?.hrmsId})`);
   };
 
   const toggleSSYN = (id, key, idx, val) => {
@@ -2986,8 +3058,8 @@ export function useTrafficInspectorState(user, onLogout) {
 
     // Operations / Admin Actions
     handleAddStationSubmit, openAddUserModal, handleAddUserSubmit, handleEditUser, saveEditedUser, handleDeleteUser, handleTransferClick, confirmTransfer,
-    openPmReview, updateSec, finalizePM, openSMForm, handleSendExamAccess, toggleSMYN, setSMField, submitSMAssessment, openTMForm, handleSendTMExamAccess, toggleTMYN, setTMField, submitTMAssessment,
-    openSSForm, handleSendSSExamAccess, toggleSSYN, setSSField, submitSSAssessment, submitInspection, submitCounselling, startQuiz, handleSelectQuizOpt, submitQuiz, markAllNotificationsRead
+    openPmReview, updateSec, finalizePM, openSMForm, handleSendExamAccess, handleRevokeExamAccess, toggleSMYN, setSMField, submitSMAssessment, openTMForm, handleSendTMExamAccess, handleRevokeTMExamAccess, toggleTMYN, setTMField, submitTMAssessment,
+    openSSForm, handleSendSSExamAccess, handleRevokeSSExamAccess, toggleSSYN, setSSField, submitSSAssessment, submitInspection, submitCounselling, startQuiz, handleSelectQuizOpt, submitQuiz, markAllNotificationsRead
   };
 }
 export default useTrafficInspectorState;

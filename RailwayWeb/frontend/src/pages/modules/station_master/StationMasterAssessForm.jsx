@@ -32,7 +32,7 @@ export function StationMasterAssessForm(props) {
     setSearchHrms,
     selectedHrmsIds,
     setSelectedHrmsIds,
-    sendBatchAssessmentAccess,
+    sendBatchAssessmentAccess, deactivateAssessmentAccess,
     user,
     allDbAssessments,
     updateEmployeeSchedule,
@@ -196,9 +196,8 @@ export function StationMasterAssessForm(props) {
   };
 
   if (pageMode === "assessForm" && assessTarget) {
-    const mcqDataStr = localStorage.getItem(`pm_mcq_test_${assessTarget.hrmsId}`);
-    const mcqData = mcqDataStr ? JSON.parse(mcqDataStr) : null;
-    const isMcqCompleted = mcqData && mcqData.completed;
+    const dbSubmission = submittedAssessments ? submittedAssessments.find(s => s.pmId === assessTarget.hrmsId) : null;
+    const isMcqCompleted = (mcqData && mcqData.completed) || (dbSubmission && ["Submitted", "Approved", "Completed", "EVALUATED"].includes(dbSubmission.status)) || assessTarget.status === "Submitted" || assessTarget.status === "Approved" || assessTarget.status === "Exam Taken";
     const isActivated = localStorage.getItem(`pm_test_activated_${assessTarget.hrmsId}`) === "true";
 
     const { knowledge, ynTotal, total: liveTotal } = computeScore(assessForm);
@@ -318,11 +317,11 @@ export function StationMasterAssessForm(props) {
                         color: isActivated ? "#dc2626" : "#ffffff",
                         boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
                       }}
-                      onClick={() => {
+                      onClick={async () => {
                         if (isActivated) {
-                          localStorage.setItem(`pm_test_activated_${assessTarget.hrmsId}`, "false");
+                          await deactivateAssessmentAccess(assessTarget.hrmsId);
                         } else {
-                          localStorage.setItem(`pm_test_activated_${assessTarget.hrmsId}`, "true");
+                          await sendBatchAssessmentAccess([assessTarget.hrmsId]);
                         }
                         setActivatedTests(prev => ({ ...prev, [assessTarget.hrmsId]: !isActivated }));
                       }}

@@ -446,6 +446,9 @@ function PointsmanModule({ user, onLogout }) {
           .order('created_at', { ascending: false });
 
         if (!error && assessments) {
+          const activatedTime = Number(localStorage.getItem(`pm_test_activated_time_${employeeId}`)) || 0;
+          const isRecent = Date.now() - activatedTime < 15000; // 15 seconds guard
+
           const pmAssessments = assessments.filter(a => {
             const t = (a.assessment_type || "").toLowerCase();
             return t.includes("checklist") || t.includes("pointsman") || t.includes("competency");
@@ -505,17 +508,21 @@ function PointsmanModule({ user, onLogout }) {
                 localStorage.setItem(`pm_test_assigned_${employeeId}`, "Assigned");
               }
             } else {
+              if (!isRecent) {
+                const currentActivated = localStorage.getItem(`pm_test_activated_${employeeId}`);
+                if (currentActivated !== "false") {
+                  localStorage.setItem(`pm_test_activated_${employeeId}`, "false");
+                  window.dispatchEvent(new Event("storage"));
+                }
+              }
+            }
+          } else {
+            if (!isRecent) {
               const currentActivated = localStorage.getItem(`pm_test_activated_${employeeId}`);
               if (currentActivated !== "false") {
                 localStorage.setItem(`pm_test_activated_${employeeId}`, "false");
                 window.dispatchEvent(new Event("storage"));
               }
-            }
-          } else {
-            const currentActivated = localStorage.getItem(`pm_test_activated_${employeeId}`);
-            if (currentActivated !== "false") {
-              localStorage.setItem(`pm_test_activated_${employeeId}`, "false");
-              window.dispatchEvent(new Event("storage"));
             }
           }
         }
