@@ -1,0 +1,11 @@
+HRMS: TI_3 | Name: aura  | Password: password123 | Role: Traffic Inspector | Station: — | Jurisdiction: bordhai
+HRMS: ti_34 | Name: pass | Password: password123 | Role: Traffic Inspector | Station: Wardha | Jurisdiction: chooti padoli
+HRMS: ti_56 | Name: Lambu | Password: password123 | Role: Traffic Inspector | Station: Wardha | Jurisdiction: arvi
+HRMS: ti_12 | Name: raju | Password: password123 | Role: Traffic Inspector | Station: Wardha | Jurisdiction: katol
+HRMS: ti_1 | Name: rahul | Password: password123 | Role: Traffic Inspector | Station: Wardha | Jurisdiction: Wardha
+HRMS: ti_2 | Name: prem | Password: password123 | Role: Traffic Inspector | Station: Wardha | Jurisdiction: chandur
+HRMS: ti_789 | Name: sunil | Password: password123 | Role: Traffic Inspector | Station: chandur | Jurisdiction: ghoradongri
+HRMS: SM_QA918797 | Name: QA Station Master Test | Password: TestPass@123 | Role: Station Master | Station: chandur | Jurisdiction: —
+HRMS: sm_3 | Name: ojasss | Password: password123 | Role: Station Master | Station: Wardha | Jurisdiction: Nagpur Division
+HRMS: sm_1 | Name: shantanu | Password: password123 | Role: Station Master | Station: chandur | Jurisdiction: Nagpur Division
+HRMS: sm_5 | Name: akshay | Password: password123 | Role: Station Master | Station: bordhai | Jurisdiction: Nagpur Division

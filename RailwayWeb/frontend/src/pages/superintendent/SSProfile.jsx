@@ -40,12 +40,13 @@ export default function SSProfile({
   const fallbackTraining = user.refStatus || user.trainingStatus || stationSuperintendentProfile.trainingStatus;
 
   const latestApproved = (history || []).find(h => ["Approved", "Completed", "Submitted", "Pending"].includes(h.approvalStatus));
-  const scoreVal = user.score !== undefined && user.score !== null && user.score !== 0 ? user.score : (latestApproved?.totalScore || (latestScore && !String(latestScore).includes("—") ? parseInt(latestScore) : 85));
+  const scoreVal = (user.score !== undefined && user.score !== null && user.score !== 0) ? user.score : (latestApproved?.totalScore || (latestScore && !String(latestScore).includes("—") ? parseInt(latestScore) : null));
   const computedCategory = latestApproved?.category || (scoreVal ? getCategory(scoreVal) : null);
-  const category = user.category && user.category !== "Untested" ? user.category : (user.cat && user.cat !== "Untested" ? user.cat : (latestCategory && latestCategory !== "—" && latestCategory !== "Untested" && !latestCategory.includes("Awaiting") ? latestCategory : (computedCategory || stationSuperintendentProfile.currentCategory || "A")));
+  const category = (user.category && user.category !== "Untested") ? user.category : ((user.cat && user.cat !== "Untested") ? user.cat : ((latestCategory && latestCategory !== "—" && latestCategory !== "Untested" && !latestCategory.includes("Awaiting")) ? latestCategory : (computedCategory || null))) || "Untested";
 
   // Derive risk from category: A/B → Low, C → Medium, D → High
-  const risk = category === "Untested" ? "Untested" : category === "D" ? "High" : category === "C" ? "Medium" : "Low";
+  const riskCategory = history.length > 0 ? category : (user.category || user.cat || "A");
+  const risk = riskCategory === "Untested" ? "Untested" : riskCategory === "D" ? "High" : riskCategory === "C" ? "Medium" : "Low";
 
   return (
     <div className="sdom-fade">
@@ -56,7 +57,20 @@ export default function SSProfile({
           <div style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 4 }}>{fullName}</div>
           <div style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.7)" }}>{t(fallbackDesignation)} &bull; {t(fallbackStation)} &bull; {t(fallbackZone)}</div>
           <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-            {(!category || category.includes("Awaiting")) ? (
+            {history.length === 0 ? (
+              <>
+                <span className={`sdom-badge ${
+                  (user.category || user.cat || "A") === "D" ? "sdom-badge-danger" : 
+                  (user.category || user.cat || "A") === "C" ? "sdom-badge-warning" : 
+                  "sdom-badge-success"
+                }`}>
+                  {t("Category")} {user.category || user.cat || "A"}
+                </span>
+                <span className="sdom-badge sdom-badge-warning">
+                  {t("Pending First Assessment")}
+                </span>
+              </>
+            ) : (!category || category.includes("Awaiting")) ? (
               <span className="sdom-badge sdom-badge-warning">{t("Awaiting Approval")}</span>
             ) : (
               <span className={`sdom-badge ${category === "D" ? "sdom-badge-danger" : category === "C" ? "sdom-badge-warning" : "sdom-badge-success"}`}>
@@ -75,7 +89,7 @@ export default function SSProfile({
         </div>
         <div className="sdom-station-header-stats">
           <div className="sdom-station-header-stat">
-            <span className="val">{scoreVal !== null ? `${scoreVal}/100` : "—"}</span>
+            <span className="val">{history.length > 0 && scoreVal !== null ? `${scoreVal}/100` : t("No Assessment Taken")}</span>
             <span className="lbl">{t("Latest Score")}</span>
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }}/>
@@ -85,7 +99,7 @@ export default function SSProfile({
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }}/>
           <div className="sdom-station-header-stat">
-            <span className="val">{history.length ? history[0].date : (user.joiningDate || stationSuperintendentProfile.joiningDate)}</span>
+            <span className="val">{history.length ? history[0].date : t("No Assessment Taken")}</span>
             <span className="lbl">{t("Last Assessment")}</span>
           </div>
         </div>
@@ -135,16 +149,22 @@ export default function SSProfile({
         <div className="sdom-chart-card">
           <div className="sdom-chart-title">{t("Score Trend")}</div>
           <div className="sdom-chart-subtitle">{t("Your assessment score progression")}</div>
-          <div style={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={personalScoreData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                <XAxis dataKey="month" fontSize={11}/>
-                <YAxis domain={[40, 100]} fontSize={11}/>
-                <Tooltip/>
-                <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }}/>
-              </LineChart>
-            </ResponsiveContainer>
+          <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {history.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={personalScoreData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                  <XAxis dataKey="month" fontSize={11}/>
+                  <YAxis domain={[40, 100]} fontSize={11}/>
+                  <Tooltip/>
+                  <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }}/>
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ color: "#64748b", fontSize: "0.9rem" }}>
+                {t("No Assessment Records Found")}
+              </div>
+            )}
           </div>
         </div>
       </div>

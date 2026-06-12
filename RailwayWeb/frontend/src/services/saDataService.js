@@ -89,6 +89,26 @@ export const saDataService = {
     try {
       const usersData = await dbService.getAllUsers();
       if (usersData && usersData.length > 0) {
+        // Fetch all assessments from Supabase to determine if users have approved assessments
+        let assessList = [];
+        try {
+          const { data, error } = await supabase
+            .from("ASSESSMENT")
+            .select(`
+              assessment_id,
+              status,
+              employee_id,
+              created_at,
+              TEST_ATTEMPT (obtained_marks, category)
+            `)
+            .order("created_at", { ascending: false });
+          if (!error && data) {
+            assessList = data;
+          }
+        } catch (dbErr) {
+          console.error("Failed to fetch assessments inside saDataService:", dbErr);
+        }
+
         const dynamicStationTiMap = {};
         usersData.forEach(userObj => {
           const roleName = userObj.ROLE?.role_name || "";
@@ -124,15 +144,31 @@ export const saDataService = {
           else if (roleName === "Train Manager") superAdminRole = "tm";
           else if (roleName === "Traffic Inspector") superAdminRole = "ti";
 
-          const lastScore = ep.current_score != null ? ep.current_score : 0;
-          const safetyScore = ep.safety_score != null ? ep.safety_score : 0;
+          // Calculate assessment status, score, and category from Supabase
+          const userAssess = assessList.filter(a => a.employee_id === u.user_id);
+          const approvedAssess = userAssess.filter(a => a.status === "Approved");
+          const hasApproved = approvedAssess.length > 0;
 
-          const cat = ep.category || (lastScore === 0 ? "Untested" : (lastScore >= 80 ? "A" : lastScore >= 50 ? "B" : lastScore >= 26 ? "C" : "D"));
-
+          let lastScore = null;
+          let cat = ep.category || "A"; // default to imported category
+          if (cat === "Untested" && !hasApproved) {
+            cat = "A"; // fallback if Untested was set
+          }
+          let assessmentStatus = "Pending First Assessment";
           let risk = "Low";
-          if (cat === "C") risk = "Medium";
-          else if (cat === "D") risk = "High";
-          else if (cat === "Untested") risk = "Untested";
+
+          if (hasApproved) {
+            const latestApproved = approvedAssess[0];
+            const attempt = latestApproved.TEST_ATTEMPT?.[0];
+            lastScore = attempt?.obtained_marks != null ? attempt.obtained_marks : null;
+            cat = attempt?.category || ep.category || "A";
+            assessmentStatus = "Approved";
+            risk = cat === "D" ? "High" : (lastScore >= 80 ? "Low" : lastScore >= 60 ? "Medium" : "High");
+          } else {
+            risk = cat === "D" ? "High" : cat === "C" ? "Medium" : "Low";
+          }
+
+          const safetyScore = ep.safety_score != null ? ep.safety_score : 0;
 
           const mon = Array.isArray(u.MONITORING) ? (u.MONITORING[0] || {}) : (u.MONITORING || {});
           const monitoringStatus = mon.monitoring_status || ep.monitoring_status || "Active";
@@ -149,6 +185,20 @@ export const saDataService = {
             try { parsedMeta = JSON.parse(latestRef.course_name); } catch (_) { }
           }
 
+          const resolvedStatus = u.status === "Suspended" ? "Rejected" : u.status === "Retired" ? "Overdue" : (hasApproved ? "Approved" : "Pending First Assessment");
+
+          const history = userAssess.map(a => {
+            const attempt = a.TEST_ATTEMPT?.[0] || {};
+            const scoreVal = attempt.obtained_marks || 0;
+            return {
+              id: a.assessment_id,
+              date: a.assessment_date ? new Date(a.assessment_date).toISOString().slice(0, 10) : new Date(a.created_at).toISOString().slice(0, 10),
+              score: scoreVal,
+              category: attempt.category || a.category || "A",
+              status: a.status
+            };
+          });
+
           return {
             id: u.hrms_id,
             user_id: u.user_id,
@@ -157,12 +207,18 @@ export const saDataService = {
             station: st.station_name || "—",
             ti: st.station_name ? (dynamicStationTiMap[st.station_name.toLowerCase()] || "—") : "—",
             cat,
+            category: cat,
             risk,
             monitoringStatus,
             score: lastScore,
+            lastScore: lastScore,
+            safetyScore,
             contact: u.mobile_no || "—",
             lastDate: ep.joining_date || "—",
-            status: u.status === "Suspended" ? "Rejected" : u.status === "Retired" ? "Overdue" : "Approved",
+            status: resolvedStatus,
+            assessmentStatus: assessmentStatus,
+            approvalStatus: assessmentStatus,
+            totalAssessments: userAssess.length,
             email: u.email || "—",
             pfNumber: u.pf_number || "—",
             division: ep.division || "—",
@@ -178,7 +234,11 @@ export const saDataService = {
             pmeDoneDate: latestPme.pme_done_date || null,
             refStatus: ep.refresher_status || parsedMeta.refStatus || "Cleared",
             refDueDate: parsedMeta.nextDueDate || latestRef.expiry_date || null,
-            refDoneDate: latestRef.training_date || null
+            refDoneDate: latestRef.training_date || null,
+            lastAssessDate: hasApproved 
+              ? (approvedAssess[0].assessment_date ? new Date(approvedAssess[0].assessment_date).toISOString().slice(0, 10) : new Date(approvedAssess[0].created_at).toISOString().slice(0, 10))
+              : "No Assessment Taken",
+            history: history
           };
         });
       }
@@ -369,7 +429,7 @@ export const saDataService = {
           payload.disciplinary = "None";
           payload.incidents = 0;
           payload.monitoringStatus = "Active";
-          payload.category = payload.category || "Untested";
+          payload.category = payload.category || modalData.cat || modalData.category || "A";
           payload.pmeStatus = payload.pmeStatus || "Fit";
           payload.refStatus = payload.refStatus || "Cleared";
         }

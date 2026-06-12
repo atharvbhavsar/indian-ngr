@@ -93,6 +93,18 @@ function TrainManagerModule({ user, onLogout }) {
 
   const { startAlarmSound, stopAlarmSound } = useEmergencyAlarm();
 
+  // Clear any stale cached history from sessionStorage (may contain old mock/seed data)
+  useEffect(() => {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && k.startsWith("tm_history_")) keysToRemove.push(k);
+      }
+      keysToRemove.forEach(k => sessionStorage.removeItem(k));
+    } catch(e) { /* ignore */ }
+  }, []);
+
   const [activeNav, setActiveNav] = useState("dashboard");
   const [screenMode, setScreenMode] = useState("default");
 

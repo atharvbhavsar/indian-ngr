@@ -78,6 +78,18 @@ function StationMasterModule({ user, onLogout }) {
   const { t } = useLanguage();
   const state = useStationMasterState(user, onLogout);
 
+  // Clear any stale cached history (may contain old mock/seed data)
+  useEffect(() => {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("sm_history_")) keysToRemove.push(k);
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch(e) { /* ignore */ }
+  }, []);
+
   /* ── PME local state ── */
   const [showPmeModal, setShowPmeModal] = useState(false);
   const [pmeFormHrmsId, setPmeFormHrmsId] = useState("");
@@ -300,6 +312,7 @@ function StationMasterModule({ user, onLogout }) {
       s={s}
       setViewingPm={setViewingPm}
       smProfile={user}
+      allDbAssessments={allDbAssessments}
     />
   );
 
@@ -313,15 +326,32 @@ function StationMasterModule({ user, onLogout }) {
   );
 
   /* ── PM DETAIL ── */
-  const renderPmDetail = (pm) => (
-    <StationMasterPointsmanView
-      pm={pm}
-      setPageMode={setPageMode}
-      smProfile={user}
-      pmAssessmentHistory={[]}
-      setInspectRecord={setInspectRecord}
-    />
-  );
+  const renderPmDetail = (pm) => {
+    const pmAssessments = (allDbAssessments || []).filter(a => a.employee?.hrms_id === pm.hrmsId);
+    const mappedHistory = pmAssessments.map(a => {
+      const attempt = a.TEST_ATTEMPT?.[0] || {};
+      const scoreVal = attempt.obtained_marks || 0;
+      return {
+        id: a.assessment_id,
+        date: a.assessment_date ? new Date(a.assessment_date).toISOString().slice(0, 10) : new Date(a.created_at).toISOString().slice(0, 10),
+        testMarks: scoreVal,
+        addMarks: 0,
+        total: scoreVal,
+        category: attempt.category || a.category || getCat(scoreVal),
+        approvalStatus: a.status || "Pending",
+        tiRemarks: a.remarks || ""
+      };
+    });
+    return (
+      <StationMasterPointsmanView
+        pm={pm}
+        setPageMode={setPageMode}
+        smProfile={user}
+        pmAssessmentHistory={{ [pm.id]: mappedHistory }}
+        setInspectRecord={setInspectRecord}
+      />
+    );
+  };
 
   /* ── ASSESS POINTSMAN ── */
   const renderAssess = () => (

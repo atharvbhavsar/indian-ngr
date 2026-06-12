@@ -170,7 +170,7 @@ export function SAStationDetail({ st, staff, closeView, setView }) {
                     <td style={{fontWeight:700}}>{s.name}</td>
                     <td style={{color:"#64748b",fontSize:"0.85rem"}}>{s.id}</td>
                     <td>{catBadge(s.cat)}</td>
-                    <td style={{fontWeight:700}}>{s.score}</td>
+                    <td style={{fontWeight:700}}>{s.score ?? "—"}</td>
                     <td>{s.lastDate}</td>
                     <td>{statusBadge(s.status)}</td>
                     <td><button className="sdom-btn-ghost" onClick={()=>setView({ type: "staffDetail", data: s, returnTo: "stationDetail", stationData: st })}>View Details</button></td>
@@ -197,7 +197,7 @@ export function SAStationDetail({ st, staff, closeView, setView }) {
                     <td style={{color:"#64748b",fontSize:"0.85rem"}}>{s.id}</td>
                     <td>{catBadge(s.cat)}</td>
                     <td>{riskBadge(s.risk)}</td>
-                    <td style={{fontWeight:700}}>{s.score}</td>
+                    <td style={{fontWeight:700}}>{s.score ?? "—"}</td>
                     <td>{statusBadge(s.status)}</td>
                     <td><button className="sdom-btn-ghost" onClick={()=>setView({ type: "staffDetail", data: s, returnTo: "stationDetail", stationData: st })}>View Details</button></td>
                   </tr>

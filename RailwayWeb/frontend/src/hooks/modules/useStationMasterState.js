@@ -59,11 +59,11 @@ export function useStationMasterState(user, onLogout) {
         hrmsId: x.id,
         cat: x.cat || "Untested",
         risk: x.risk || "Untested",
-        score: x.score !== undefined && x.score !== 0 ? parseInt(x.score) : null,
-        lastScore: x.score !== undefined && x.score !== 0 ? parseInt(x.score) : null,
-        safetyScore: x.safetyScore !== undefined && x.safetyScore !== 0 ? parseInt(x.safetyScore) : null,
-        totalAssessments: x.totalAssessments || 0,
-        approvalStatus: "Approved",
+        score: x.cat === "Untested" ? null : (x.score !== undefined && x.score !== 0 ? parseInt(x.score) : null),
+        lastScore: x.cat === "Untested" ? null : (x.score !== undefined && x.score !== 0 ? parseInt(x.score) : null),
+        safetyScore: x.cat === "Untested" ? null : (x.safetyScore !== undefined && x.safetyScore !== 0 ? parseInt(x.safetyScore) : null),
+        totalAssessments: x.cat === "Untested" ? 0 : (x.totalAssessments || 0),
+        approvalStatus: x.cat === "Untested" ? "Pending" : "Approved",
         stationName: x.station,
         doj: x.lastDate || "2026-01-01"
       }));
@@ -77,7 +77,7 @@ export function useStationMasterState(user, onLogout) {
         }
         return true;
       });
-      setPointsmen(filtered);
+      // setPointsmen is deferred to supabase load or fallback below to prevent UI flickering
 
       const sms = mapped.filter(x => {
         const isSm = x.role === "sm" || x.role === "Station Master";
@@ -123,9 +123,55 @@ export function useStationMasterState(user, onLogout) {
                 pmId: a.employee.hrms_id,
                 date: a.assessment_date ? new Date(a.assessment_date).toISOString().slice(0, 10) : new Date(a.created_at).toISOString().slice(0, 10),
                 score: a.TEST_ATTEMPT?.[0]?.obtained_marks || 0,
-                totalMarks: a.TEST_ATTEMPT?.[0]?.total_marks || 100
+                totalMarks: a.TEST_ATTEMPT?.[0]?.total_marks || 100,
+                status: a.status
               }));
             setSubmittedAssessments(dbSubmitted);
+
+            const updatedPointsmen = filtered.map(p => {
+              const pmAssessments = assessList.filter(a => a.employee?.hrms_id === p.hrmsId);
+              const approvedAssessments = pmAssessments.filter(a => a.status === 'Approved');
+              const totalApproved = approvedAssessments.length;
+
+              if (totalApproved > 0) {
+                const latestApproved = [...approvedAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+                const score = latestApproved?.TEST_ATTEMPT?.[0]?.obtained_marks;
+                const cat = latestApproved?.TEST_ATTEMPT?.[0]?.category || p.cat || "A";
+                const lastAssessDate = latestApproved.assessment_date
+                  ? new Date(latestApproved.assessment_date).toISOString().slice(0, 10)
+                  : new Date(latestApproved.created_at).toISOString().slice(0, 10);
+                return {
+                  ...p,
+                  totalAssessments: pmAssessments.length,
+                  approvalStatus: "Approved",
+                  status: "Approved",
+                  cat: cat,
+                  category: cat,
+                  risk: cat === "D" ? "High" : (score >= 80 ? "Low" : score >= 60 ? "Medium" : "High"),
+                  score: score,
+                  lastScore: score,
+                  lastAssessDate: lastAssessDate
+                };
+              } else {
+                const cat = p.cat || p.category || "A";
+                return {
+                  ...p,
+                  totalAssessments: pmAssessments.length,
+                  approvalStatus: "Pending First Assessment",
+                  status: "Pending First Assessment",
+                  cat: cat,
+                  category: cat,
+                  risk: cat === "D" ? "High" : cat === "C" ? "Medium" : "Low",
+                  score: null,
+                  lastScore: null,
+                  lastAssessDate: "No Assessment Taken"
+                };
+              }
+            });
+            setPointsmen(updatedPointsmen);
+
+            const updatedDrafts = updatedPointsmen.filter(x => x.cat === "D" || x.cat === "Untested" || x.approvalStatus === "Pending" || x.approvalStatus === "Pending First Assessment");
+            setDrafts(updatedDrafts);
 
             // Also fetch SM's OWN assessment history
             if (user?.userId) {
@@ -178,12 +224,17 @@ export function useStationMasterState(user, onLogout) {
           }
         } catch (dbErr) {
           console.error("Failed to fetch submitted assessments:", dbErr);
+          // Fallback if Supabase fails
+          setPointsmen(filtered);
+          const initialDrafts = filtered.filter(x => x.cat === "D" || x.cat === "Untested" || x.approvalStatus === "Pending" || x.approvalStatus === "Pending First Assessment");
+          setDrafts(initialDrafts);
         }
+      } else {
+        // Fallback for offline mode
+        setPointsmen(filtered);
+        const initialDrafts = filtered.filter(x => x.cat === "D" || x.cat === "Untested" || x.approvalStatus === "Pending" || x.approvalStatus === "Pending First Assessment");
+        setDrafts(initialDrafts);
       }
-
-      // Only Pointsmen in Category D can be assessed by the Station Master
-      const initialDrafts = filtered.filter(x => x.cat === "D" || x.category === "D");
-      setDrafts(initialDrafts);
 
       if (isSupabaseConfigured && userStation) {
         try {
@@ -299,6 +350,8 @@ export function useStationMasterState(user, onLogout) {
     }
     try {
       const data = pmModal.data;
+      const catVal = data.category || data.cat || "Untested";
+      const scoreVal = data.score !== undefined ? data.score : (catVal === "A" ? 85 : catVal === "B" ? 70 : catVal === "C" ? 55 : catVal === "D" ? 40 : 70);
       const modalData = {
         id: data.hrmsId || data.employeeId || data.id,
         name: data.name,
@@ -309,8 +362,9 @@ export function useStationMasterState(user, onLogout) {
         station: data.stationName || data.station || data.smStation,
         division: data.division || data.smDivision || data.tiArea,
         lastDate: data.doj || data.lastDate,
-        score: data.lastScore || data.score,
-        cat: data.cat || data.category,
+        score: scoreVal,
+        safetyScore: scoreVal,
+        cat: catVal,
         reportingSm: data.reportingSm || user?.name || "",
         workLocation: data.workLocation,
         shift: data.shift,
@@ -678,7 +732,11 @@ export function useStationMasterState(user, onLogout) {
   };
 
   /* ─── Open PM detail ─── */
-  const openPmDetail = (pm) => { setSelectedPm(pm); setPageMode("pmDetail"); };
+  const openPmDetail = (pm) => {
+    setSelectedPm(pm);
+    setViewingPm(pm);
+    setPageMode("pmDetail");
+  };
 
   /* ─── Open assess form ─── */
   const openAssessForm = (draft) => {

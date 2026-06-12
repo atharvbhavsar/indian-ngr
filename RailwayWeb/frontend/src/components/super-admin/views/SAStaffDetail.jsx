@@ -10,13 +10,37 @@ export function SAStaffDetail({
   setView,
   closeView
 }) {
-  const monthlyTrendList = [
-    { month: "Dec'25" },
-    { month: "Jan'26" },
-    { month: "Feb'26" },
-    { month: "Mar'26" },
-  ];
-  const scoreData = monthlyTrendList.map((m, i) => ({ month: m.month, score: Math.max(50, s.score - 10 + i * 2) }));
+  const isUnassessed = s.totalAssessments === 0 || s.score === null || s.status === "Pending First Assessment";
+
+  const formatMonthYear = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+  };
+
+  const pmAssessments = (s.history || [])
+    .filter(a => a.score != null)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  let scoreData = [];
+  if (pmAssessments.length > 0) {
+    scoreData = pmAssessments.map(a => ({
+      month: formatMonthYear(a.date),
+      score: a.score,
+      date: a.date
+    }));
+  } else {
+    const baseScore = s.score;
+    if (baseScore) {
+      scoreData = [
+        { month: "Dec'25", score: Math.max(50, baseScore - 6) },
+        { month: "Jan'26", score: Math.max(50, baseScore - 4) },
+        { month: "Feb'26", score: Math.max(50, baseScore - 2) },
+        { month: "Mar'26", score: Math.max(50, baseScore) }
+      ];
+    }
+  }
 
   return (
     <div className="sdom-fade">
@@ -44,7 +68,7 @@ export function SAStaffDetail({
         </div>
         <div className="sdom-station-header-stats">
           <div className="sdom-station-header-stat">
-            <span className="val">{s.score}</span>
+            <span className="val">{isUnassessed ? "No Assessment Taken" : (s.score !== null && s.score !== undefined ? `${s.score}/100` : "—")}</span>
             <span className="lbl">Latest Score</span>
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
@@ -54,7 +78,7 @@ export function SAStaffDetail({
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
           <div className="sdom-station-header-stat">
-            <span className="val">{s.lastDate || "—"}</span>
+            <span className="val">{isUnassessed ? "No Assessment Taken" : (s.lastDate || "—")}</span>
             <span className="lbl">Last Assessment</span>
           </div>
         </div>
@@ -132,16 +156,22 @@ export function SAStaffDetail({
         <div className="sdom-chart-card">
           <div className="sdom-chart-title">Score Trend</div>
           <div className="sdom-chart-subtitle">Assessment score progression</div>
-          <div style={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={scoreData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" fontSize={11} />
-                <YAxis domain={[40, 100]} fontSize={11} />
-                <RTooltip />
-                <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
-              </LineChart>
-            </ResponsiveContainer>
+          <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }}>
+            {scoreData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={scoreData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" fontSize={11} />
+                  <YAxis domain={[0, 100]} fontSize={11} />
+                  <RTooltip />
+                  <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ color: "#64748b", fontSize: "0.95rem", fontWeight: 600, fontStyle: "italic" }}>
+                No Assessment Records Found
+              </div>
+            )}
           </div>
         </div>
       </div>

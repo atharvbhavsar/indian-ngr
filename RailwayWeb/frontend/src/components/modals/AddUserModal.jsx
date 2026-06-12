@@ -172,6 +172,20 @@ export default function AddUserModal({
                   required
                 />
               </div>
+              <div className="sdom-modal-field">
+                <label>Safety Category *</label>
+                <select
+                  value={newUserData.category || "Untested"}
+                  onChange={e => setNewUserData({ ...newUserData, category: e.target.value })}
+                  required
+                >
+                  <option value="Untested">Untested</option>
+                  <option value="A">Category A</option>
+                  <option value="B">Category B</option>
+                  <option value="C">Category C</option>
+                  <option value="D">Category D</option>
+                </select>
+              </div>
             </div>
           </div>
 

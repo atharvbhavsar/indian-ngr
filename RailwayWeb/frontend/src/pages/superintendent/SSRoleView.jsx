@@ -129,9 +129,10 @@ export default function SSRoleView({
                   </tr>
                 )}
                 {filtered.map(s => {
+                  const isUnassessed = s.status === "Pending First Assessment" || s.approvalStatus === "Pending First Assessment" || s.score === null || s.score === undefined;
                   const grade = s.cat || s.category || getCat(s.score);
                   const computedRisk = getUserRisk(s);
-                  const computedStatus = s.pmeStatus === "Unfit" ? "Rejected" : s.refStatus === "Expired" ? "Pending" : "Approved";
+                  const computedStatus = s.status || s.approvalStatus || (s.pmeStatus === "Unfit" ? "Rejected" : s.refStatus === "Expired" ? "Pending" : "Approved");
                   return (
                     <tr key={s.id}>
                       <td style={{ fontWeight: 700 }}>{s.name}</td>
@@ -140,7 +141,7 @@ export default function SSRoleView({
                       <td>{s.ti && s.ti !== "—" ? s.ti : "Not Assigned"}</td>
                       <td>{catBadge(grade)}</td>
                       <td>{riskBadge(computedRisk)}</td>
-                      <td style={{ fontWeight: 700 }}>{grade === "Untested" ? "Not Given Test" : `${s.score}/100`}</td>
+                      <td style={{ fontWeight: 700 }}>{isUnassessed ? "No Assessment Taken" : `${s.score}/100`}</td>
                       <td>{statusBadge(computedStatus)}</td>
                       <td>
                         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", alignItems: "center" }}>

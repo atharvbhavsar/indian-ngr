@@ -50,7 +50,7 @@ export function StationMasterDashboard(props) {
     score: avgScore,
     safety: safetyVal,
     highRisk: pointsmen.filter(p => riskLevel(p) === "High").length,
-    pending: drafts.length
+    pending: pointsmen.filter(p => p.approvalStatus === "Pending").length
   };
 
   // calculate category distribution dynamically from pointsmen!
@@ -106,11 +106,14 @@ export function StationMasterDashboard(props) {
       </div>
 
       {/* Summary cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 16, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
         {[
           { label: t("Total Station Staff"),   val: myStationObj.smCount + pointsmen.length },
-          { label: t("Pending Assessments"),   val: myStationObj.pending },
-          { label: t("Completed Evaluations"), val: pointsmen.length - myStationObj.pending },
+          { label: t("Pending First Assessment"), val: pointsmen.filter(p => p.approvalStatus === "Pending First Assessment" || p.totalAssessments === 0).length },
+          { label: t("Not Attempted Employees"),  val: pointsmen.filter(p => p.totalAssessments === 0).length },
+          { label: t("Assessment Due Employees"), val: pointsmen.filter(p => p.approvalStatus === "Pending" || p.pmeStatus === "Due" || p.refStatus === "Due").length },
+          { label: t("Pending Approvals"),   val: myStationObj.pending },
+          { label: t("Completed Evaluations"), val: pointsmen.length - pointsmen.filter(p => p.totalAssessments === 0).length },
           { label: t("High-Risk Pointsmen"),   val: myStationObj.highRisk },
           { label: t("Safety Compliance"),     val: myStationObj.safety > 0 ? `${myStationObj.safety}/100` : "—" },
         ].map(c => (
@@ -275,6 +278,7 @@ export function StationMasterDashboard(props) {
                   pointsmen.map(p => {
                     const cat = p.cat || "Untested";
                     const risk = riskLevel(p);
+                    const isPendingFirst = p.approvalStatus === "Pending First Assessment" || p.totalAssessments === 0;
                     return (
                       <tr key={p.id}>
                         <td style={{ fontWeight: 700 }}>{p.name}</td>
@@ -293,9 +297,9 @@ export function StationMasterDashboard(props) {
                             <span className={`sdom-badge ${risk === "Low" ? "sdom-badge-success" : risk === "Medium" ? "sdom-badge-warning" : "sdom-badge-danger"}`}>{t(risk)}</span>
                           )}
                         </td>
-                        <td style={{ fontWeight: 700 }}>{cat === "Untested" ? t("Not Given Test") : (p.lastScore > 0 ? `${p.lastScore}/100` : "—")}</td>
+                        <td style={{ fontWeight: 700 }}>{isPendingFirst ? t("No Assessment Taken") : (p.lastScore > 0 ? `${p.lastScore}/100` : "—")}</td>
                         <td>
-                          <span className={`sdom-badge ${p.approvalStatus === "Approved" ? "sdom-badge-success" : p.approvalStatus === "Pending" ? "sdom-badge-warning" : "sdom-badge-danger"}`}>{t(p.approvalStatus)}</span>
+                          <span className={`sdom-badge ${p.approvalStatus === "Approved" ? "sdom-badge-success" : (p.approvalStatus === "Pending" || p.approvalStatus === "Pending First Assessment") ? "sdom-badge-warning" : "sdom-badge-danger"}`}>{t(p.approvalStatus)}</span>
                         </td>
                         <td>
                           <div style={{ display: "flex", gap: "8px" }}>
@@ -355,21 +359,34 @@ export function StationMasterDashboard(props) {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", marginBottom: "16px" }}>
-              {[
-                [t("Employee ID / HRMS ID"), viewingStaff.hrmsId || viewingStaff.id],
-                [t("Designation"), t(viewingStaff.role === "sm" || viewingStaff.role === "Station Master" ? "Station Master" : viewingStaff.role === "ti" || viewingStaff.role === "Traffic Inspector" ? "Traffic Inspector" : "Pointsman")],
-                [t("Contact Number"), viewingStaff.contact || viewingStaff.mobile || "—"],
-                [t("Email ID"), viewingStaff.email || `${(viewingStaff.hrmsId || viewingStaff.id).toLowerCase()}@rail.in`],
-                [t("Current Station Placement"), t(viewingStaff.station || user?.station || "—")],
-                [t("Reporting Officer"), t(viewingStaff.reportingAom || user?.name || "—")],
-                [t("Operational Zone"), t(viewingStaff.zone || "Central Railway")],
-                [t("Operational Division"), t(viewingStaff.division || "Nagpur")]
-              ].map(([lbl, val]) => (
-                <div key={lbl} style={{ background: "#f8fafc", borderRadius: 8, padding: "10px 14px", border: "1px solid #e2e8f0" }}>
-                  <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 700, marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.04em" }}>{lbl}</div>
-                  <div style={{ fontWeight: 700, color: "#0f172a", fontSize: "0.85rem" }}>{val}</div>
-                </div>
-              ))}
+              {(() => {
+                const fields = [
+                  [t("Employee ID / HRMS ID"), viewingStaff.hrmsId || viewingStaff.id],
+                  [t("Designation"), t(viewingStaff.role === "sm" || viewingStaff.role === "Station Master" ? "Station Master" : viewingStaff.role === "ti" || viewingStaff.role === "Traffic Inspector" ? "Traffic Inspector" : "Pointsman")],
+                  [t("Contact Number"), viewingStaff.contact || viewingStaff.mobile || "—"],
+                  [t("Email ID"), viewingStaff.email || `${(viewingStaff.hrmsId || viewingStaff.id).toLowerCase()}@rail.in`],
+                  [t("Current Station Placement"), t(viewingStaff.station || user?.station || "—")],
+                  [t("Reporting Officer"), t(viewingStaff.reportingAom || user?.name || "—")],
+                  [t("Operational Zone"), t(viewingStaff.zone || "Central Railway")],
+                  [t("Operational Division"), t(viewingStaff.division || "Nagpur")]
+                ];
+                const isPm = viewingStaff.role === "pointsmen" || viewingStaff.role === "Pointsman" || viewingStaff.role === "pointsman";
+                if (isPm) {
+                  const isPendingFirst = viewingStaff.approvalStatus === "Pending First Assessment" || viewingStaff.totalAssessments === 0;
+                  fields.push([t("Category"), viewingStaff.cat || viewingStaff.category || "—"]);
+                  fields.push([t("Assessment Status"), t(viewingStaff.approvalStatus || "Pending First Assessment")]);
+                  fields.push([
+                    t("Latest Score"),
+                    isPendingFirst ? t("No Assessment Taken") : (viewingStaff.lastScore > 0 ? `${viewingStaff.lastScore}/100` : "—")
+                  ]);
+                }
+                return fields.map(([lbl, val]) => (
+                  <div key={lbl} style={{ background: "#f8fafc", borderRadius: 8, padding: "10px 14px", border: "1px solid #e2e8f0" }}>
+                    <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 700, marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.04em" }}>{lbl}</div>
+                    <div style={{ fontWeight: 700, color: "#0f172a", fontSize: "0.85rem" }}>{val}</div>
+                  </div>
+                ));
+              })()}
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>

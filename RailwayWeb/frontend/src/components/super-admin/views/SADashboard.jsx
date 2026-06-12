@@ -86,8 +86,8 @@ export function SADashboard({ staff, stations, handleChartClick, handlePieClick 
         { month: "May'26", score: 80, safety: 80 },
       ];
     }
-    const avgScore = Math.round(staff.reduce((acc, curr) => acc + (curr.score || 80), 0) / staff.length);
-    const avgSafety = Math.round(staff.reduce((acc, curr) => acc + (curr.score || 85), 0) / staff.length);
+    const avgScore = Math.round(staff.reduce((acc, curr) => acc + (curr.score || 0), 0) / (staff.filter(s => s.score > 0).length || 1));
+    const avgSafety = Math.round(staff.reduce((acc, curr) => acc + (curr.score || 0), 0) / (staff.filter(s => s.score > 0).length || 1));
 
     return [
       { month: "Dec'25", score: avgScore, safety: avgSafety },
@@ -135,11 +135,17 @@ export function SADashboard({ staff, stations, handleChartClick, handlePieClick 
     const pending = staff.filter(s => s.status === "Pending").length;
     const rejected = staff.filter(s => s.status === "Rejected").length;
     const overdue = staff.filter(s => s.status === "Overdue" || s.risk === "High").length;
+    const pendingFirst = staff.filter(s => s.status === "Pending First Assessment" || s.totalAssessments === 0).length;
+    const notAttempted = staff.filter(s => s.totalAssessments === 0).length;
+    const dueCount = staff.filter(s => s.status === "Pending" || s.status === "Overdue" || s.pmeStatus === "Due" || s.refStatus === "Due").length;
     return [
       { label:"Approved", count: approved, dot:"#1E3A5F" },
       { label:"Pending",  count: pending,  dot:"#4A90D9" },
       { label:"Rejected", count: rejected,   dot:"#B83A3A" },
       { label:"Overdue",  count: overdue,   dot:"#5A6B7C" },
+      { label:"Pending First Assessment", count: pendingFirst, dot:"#D69E2E" },
+      { label:"Not Attempted", count: notAttempted, dot:"#64748b" },
+      { label:"Assessment Due", count: dueCount, dot:"#ca8a04" }
     ];
   }, [staff]);
 

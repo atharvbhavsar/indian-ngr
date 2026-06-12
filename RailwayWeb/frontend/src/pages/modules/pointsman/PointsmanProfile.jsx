@@ -19,10 +19,11 @@ export function PointsmanProfile({
   }));
 
   // Derive risk from category: A/B → Low, C → Medium, D → High
-  const risk = !latestCategory || latestCategory === "Pending" || latestCategory === "Untested"
+  const riskCategory = history.length > 0 ? latestCategory : (profile.currentCategory || profile.category || "A");
+  const risk = !riskCategory || riskCategory === "Pending" || riskCategory === "Untested" || riskCategory === "—"
     ? "Untested"
-    : latestCategory === "D" ? "High"
-    : latestCategory === "C" ? "Medium"
+    : riskCategory === "D" ? "High"
+    : riskCategory === "C" ? "Medium"
     : "Low";
 
   return (
@@ -34,9 +35,22 @@ export function PointsmanProfile({
           <div style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 4 }}>{fullName}</div>
           <div style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.7)" }}>{t(profile.designation)} &bull; {t(profile.stationName)} &bull; {t("Central Railway")}</div>
           <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-            {latestCategory === "Pending" ? (
+            {history.length === 0 ? (
+              <>
+                <span className={`sdom-badge ${
+                  (profile.currentCategory || profile.category || "A") === "D" ? "sdom-badge-danger" : 
+                  (profile.currentCategory || profile.category || "A") === "C" ? "sdom-badge-warning" : 
+                  "sdom-badge-success"
+                }`}>
+                  {t("Category")} {profile.currentCategory || profile.category || "A"}
+                </span>
+                <span className="sdom-badge sdom-badge-warning">
+                  {t("Pending First Assessment")}
+                </span>
+              </>
+            ) : latestCategory === "Pending" ? (
               <span className="sdom-badge" style={{ background: "#fef3c7", color: "#d97706" }}>{t("Evaluation Pending")}</span>
-            ) : latestCategory === "Untested" || !latestCategory ? (
+            ) : latestCategory === "Untested" || !latestCategory || latestCategory === "—" ? (
               <span className="sdom-badge sdom-badge-warning">{t("Untested")}</span>
             ) : (
               <span className={`sdom-badge ${latestCategory === "D" ? "sdom-badge-danger" : latestCategory === "C" ? "sdom-badge-warning" : "sdom-badge-success"}`}>
@@ -55,7 +69,7 @@ export function PointsmanProfile({
         </div>
         <div className="sdom-station-header-stats">
           <div className="sdom-station-header-stat">
-            <span className="val">{latestScore !== null ? `${latestScore}/${latestOutOf}` : "—"}</span>
+            <span className="val">{history.length > 0 && latestScore !== null ? `${latestScore}/${latestOutOf}` : t("No Assessment Taken")}</span>
             <span className="lbl">{t("Latest Score")}</span>
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
@@ -65,7 +79,7 @@ export function PointsmanProfile({
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
           <div className="sdom-station-header-stat">
-            <span className="val">{history.length ? history[0].date : profile.joiningDate}</span>
+            <span className="val">{history.length ? history[0].date : t("No Assessment Taken")}</span>
             <span className="lbl">{t("Last Assessment")}</span>
           </div>
         </div>
@@ -143,12 +157,18 @@ export function PointsmanProfile({
         <div className="sdom-chart-card">
           <div className="sdom-chart-title">{t("Score Trend")}</div>
           <div className="sdom-chart-subtitle">{t("Your assessment score progression")}</div>
-          <div style={{ height: 300, marginTop: "16px" }}>
-            <PerformanceTrendChart
-              data={personalScoreData}
-              xAxisKey="month"
-              yAxisKey="score"
-            />
+          <div style={{ height: 300, marginTop: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {history.length > 0 ? (
+              <PerformanceTrendChart
+                data={personalScoreData}
+                xAxisKey="month"
+                yAxisKey="score"
+              />
+            ) : (
+              <div style={{ color: "#64748b", fontSize: "0.95rem", fontWeight: 600 }}>
+                {t("No Assessment Records Found")}
+              </div>
+            )}
           </div>
         </div>
       </div>

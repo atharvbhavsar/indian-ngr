@@ -11,7 +11,7 @@ export function catBadge(c) {
 }
 
 export function statusBadge(s) {
-  const map = { Approved:"sdom-badge-success", Pending:"sdom-badge-warning", Rejected:"sdom-badge-danger", Overdue:"sdom-badge-danger" };
+  const map = { Approved:"sdom-badge-success", Pending:"sdom-badge-warning", "Pending First Assessment":"sdom-badge-warning", Rejected:"sdom-badge-danger", Overdue:"sdom-badge-danger" };
   return <span className={`sdom-badge ${map[s] || "sdom-badge-neutral"}`}>{s}</span>;
 }
 

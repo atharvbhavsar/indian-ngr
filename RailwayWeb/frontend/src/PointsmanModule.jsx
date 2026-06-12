@@ -174,6 +174,18 @@ function PointsmanModule({ user, onLogout }) {
   const fullName = user?.name && user.name !== "Pointsman User" ? user.name : profile.name;
   const employeeId = user?.hrmsId || profile.hrmsId;
 
+  // Clear any stale cached history (may contain old mock/seed data)
+  useEffect(() => {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("pm_history_")) keysToRemove.push(k);
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch(e) { /* ignore */ }
+  }, []);
+
   const [activeNav, setActiveNav] = useState("dashboard");
   const [screenMode, setScreenMode] = useState("default");
   
@@ -187,7 +199,7 @@ function PointsmanModule({ user, onLogout }) {
     } catch (e) {
       console.error("Error reading PM history:", e);
     }
-    return initialHistory;
+    return [];
   });
   
   const [refHistory, setRefHistory] = useState([]);
@@ -314,7 +326,7 @@ function PointsmanModule({ user, onLogout }) {
               pmeStatus: `FIT (Periodic Medical Exam) - Status: ${profRec.pme_status || "Fit"}`,
               refStatus: `COMPLETED (Refresher Course) - Status: ${profRec.refresher_status || "Cleared"}`,
               trainingStatus: `ACTIVE (${profRec.monitoring_status || "Active"} Safety & Shunting Certified)`,
-              currentCategory: profRec.category || "A",
+              currentCategory: profRec.category || null,
               department: "Operations",
               reportingOfficer: profRec.reporting_sm || "— (Station Master)",
               joiningDate: profRec.date_of_joining || profRec.joining_date || "2018-06-15"

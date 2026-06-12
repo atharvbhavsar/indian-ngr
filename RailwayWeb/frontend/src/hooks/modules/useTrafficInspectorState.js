@@ -127,16 +127,17 @@ export function useTrafficInspectorState(user, onLogout) {
         else if (x.role === "tm") fullRole = "Train Manager";
         else if (x.role === "ti") fullRole = "Traffic Inspector";
 
+        const isUntested = x.cat === "Untested";
         return {
           ...x,
           role: fullRole,
           hrmsId: x.id,
-          cat: x.cat || "A",
-          risk: x.risk || "Low",
-          score: x.score !== undefined && x.score !== null ? parseInt(x.score) : 80,
-          safetyScore: x.safetyScore !== undefined && x.safetyScore !== null ? parseInt(x.safetyScore) : 85,
-          totalAssessments: x.totalAssessments || 2,
-          approvalStatus: x.status || "Approved",
+          cat: x.cat || "Untested",
+          risk: x.risk || "Untested",
+          score: isUntested ? null : (x.score !== undefined && x.score !== null ? parseInt(x.score) : null),
+          safetyScore: isUntested ? null : (x.safetyScore !== undefined && x.safetyScore !== null ? parseInt(x.safetyScore) : null),
+          totalAssessments: isUntested ? 0 : (x.totalAssessments || 0),
+          approvalStatus: isUntested ? "Pending" : (x.status || "Approved"),
           stationName: x.station,
           doj: x.lastDate || "2026-01-01"
         };
@@ -182,6 +183,43 @@ export function useTrafficInspectorState(user, onLogout) {
 
       if (!assessError && assessList) {
         setAllDbAssessments(assessList);
+
+        const updatedUsers = filteredMapped.map(userObj => {
+          const userAssessments = assessList.filter(a => a.employee?.hrms_id === userObj.hrmsId);
+          const approvedAssessments = userAssessments.filter(a => a.status === 'Approved');
+          const totalApproved = approvedAssessments.length;
+
+          if (totalApproved > 0) {
+            const latestApproved = [...approvedAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            const score = latestApproved?.TEST_ATTEMPT?.[0]?.obtained_marks;
+            const cat = latestApproved?.TEST_ATTEMPT?.[0]?.category || userObj.cat || "A";
+            return {
+              ...userObj,
+              totalAssessments: userAssessments.length,
+              approvalStatus: "Approved",
+              status: "Approved",
+              cat: cat,
+              category: cat,
+              risk: cat === "D" ? "High" : (score >= 80 ? "Low" : score >= 60 ? "Medium" : "High"),
+              score: score,
+              lastScore: score
+            };
+          } else {
+            const cat = userObj.cat || userObj.category || "A";
+            return {
+              ...userObj,
+              totalAssessments: userAssessments.length,
+              approvalStatus: "Pending First Assessment",
+              status: "Pending First Assessment",
+              cat: cat,
+              category: cat,
+              risk: cat === "D" ? "High" : cat === "C" ? "Medium" : "Low",
+              score: null,
+              lastScore: null
+            };
+          }
+        });
+        setUsers(updatedUsers);
         // 1. Pointsmen Assessments (pmList)
         const pms = assessList.filter(a => a.assessment_type === "Pointsman Checklist" || a.assessment_type === "Pointsman Evaluation" || a.assessment_type === "Checklist Evaluation");
         const pmMapped = pms
@@ -689,18 +727,25 @@ export function useTrafficInspectorState(user, onLogout) {
   const bottomStations = useMemo(() => [...stationStats].sort((a, b) => a.avgScore - b.avgScore).slice(0, 5), [stationStats]);
 
   const myPipeline = useMemo(() => {
-    const approvedCount = myPmList.filter(p => p.status === "Approved").length + mySmList.filter(s => s.status === "Approved").length + myTmList.filter(t => t.status === "Approved").length;
-    const pendingCount = myPmList.filter(p => p.status === "Pending").length + mySmList.filter(s => s.status === "Pending" || s.status === "Submitted").length + myTmList.filter(t => t.status === "Pending" || t.status === "Submitted").length;
-    const rejectedCount = mySmList.filter(s => s.status === "Rejected").length + myTmList.filter(t => t.status === "Rejected").length;
-    const overdueCount = myUsers.filter(u => u.pmeStatus === "Overdue" || u.refStatus === "Expired").length;
+    const approvedCount = myUsers.filter(u => u.status === "Approved").length;
+    const pendingCount = myUsers.filter(u => u.status === "Pending" || u.status === "Submitted").length;
+    const rejectedCount = myUsers.filter(u => u.status === "Rejected").length;
+    const overdueCount = myUsers.filter(u => u.pmeStatus === "Overdue" || u.refStatus === "Expired" || u.status === "Overdue").length;
+    
+    const pendingFirstCount = myUsers.filter(u => u.status === "Pending First Assessment" || u.totalAssessments === 0).length;
+    const notAttemptedCount = myUsers.filter(u => u.totalAssessments === 0).length;
+    const dueCount = myUsers.filter(u => u.status === "Pending" || u.status === "Overdue" || u.pmeStatus === "Due" || u.refStatus === "Due").length;
 
     return [
       { label: "Approved", count: approvedCount, dot: "#1E3A5F" },
       { label: "Pending", count: pendingCount, dot: "#4A90D9" },
       { label: "Rejected", count: rejectedCount, dot: "#B83A3A" },
-      { label: "Overdue", count: overdueCount, dot: "#5A6B7C" }
+      { label: "Overdue", count: overdueCount, dot: "#5A6B7C" },
+      { label: "Pending First Assessment", count: pendingFirstCount, dot: "#D69E2E" },
+      { label: "Not Attempted", count: notAttemptedCount, dot: "#64748b" },
+      { label: "Assessment Due", count: dueCount, dot: "#ca8a04" }
     ];
-  }, [myPmList, mySmList, myTmList, myUsers]);
+  }, [myUsers]);
 
   const myAssessmentMonthly = useMemo(() => {
     return MONTHLY.map(m => {
@@ -1110,11 +1155,14 @@ export function useTrafficInspectorState(user, onLogout) {
       return;
     }
 
+    const catVal = newUserData.category || "Untested";
+
     const newUser = {
       ...newUserData,
       id: newUserData.id || `USER_${Date.now().toString().slice(-4)}`,
-      score: 75,
-      cat: "B",
+      score: 0,
+      safetyScore: 0,
+      cat: catVal,
       lastDate: new Date().toISOString().slice(0, 10)
     };
     try {

@@ -93,7 +93,7 @@ export function SARoleDirectory({
                   <td>{s.ti}</td>
                   <td>{catBadge(s.cat)}</td>
                   <td>{riskBadge(s.risk)}</td>
-                  <td style={{fontWeight:700}}>{s.score}</td>
+                  <td style={{fontWeight:700}}>{s.score ?? "—"}</td>
                   <td>{statusBadge(s.status)}</td>
                   <td>
                     <div style={{display:"flex",gap:8}}>

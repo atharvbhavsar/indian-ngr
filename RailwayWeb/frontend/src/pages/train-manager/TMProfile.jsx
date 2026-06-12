@@ -20,9 +20,9 @@ export function TMProfile({
   }));
 
   const latestApproved = (history || []).find(h => ["Approved", "Completed", "Submitted", "Pending"].includes(h.approvalStatus));
-  const score = user.score !== undefined && user.score !== null && user.score !== 0 ? user.score : (latestApproved?.totalScore || latestScore || 85);
+  const score = (user.score !== undefined && user.score !== null && user.score !== 0) ? user.score : (latestApproved?.totalScore || latestScore || null);
   const computedCategory = latestApproved?.dbCategory || latestApproved?.category || (score ? getCategory(score) : null);
-  const category = user.category && user.category !== "Untested" ? user.category : (user.cat && user.cat !== "Untested" ? user.cat : (latestCategory && latestCategory !== "—" && latestCategory !== "Untested" && !latestCategory.includes("Awaiting") ? latestCategory : (computedCategory || trainManagerProfile.currentCategory || "A")));
+  const category = (user.category && user.category !== "Untested") ? user.category : ((user.cat && user.cat !== "Untested") ? user.cat : ((latestCategory && latestCategory !== "—" && latestCategory !== "Untested" && !latestCategory.includes("Awaiting")) ? latestCategory : (computedCategory || null))) || "Untested";
 
   // Fallbacks to trainManagerProfile fields for offline/local sandbox consistency
   const fallbackDesignation = user.role || trainManagerProfile.designation;
@@ -39,7 +39,8 @@ export function TMProfile({
   const fallbackTraining = user.refStatus || user.trainingStatus || trainManagerProfile.trainingStatus;
 
   // Derive risk from category: A/B → Low, C → Medium, D → High
-  const risk = category === "Untested" ? "Untested" : category === "D" ? "High" : category === "C" ? "Medium" : "Low";
+  const riskCategory = history.length > 0 ? category : (user.category || user.cat || "A");
+  const risk = riskCategory === "Untested" ? "Untested" : riskCategory === "D" ? "High" : riskCategory === "C" ? "Medium" : "Low";
 
   return (
     <div className="sdom-fade">
@@ -50,13 +51,30 @@ export function TMProfile({
           <div style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 4 }}>{fullName}</div>
           <div style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.7)" }}>{t(fallbackDesignation)} &bull; {t(fallbackStation)} &bull; {t(fallbackZone)}</div>
           <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-            {category !== "Untested" && (
-              <span className={`sdom-badge ${category === "D" ? "sdom-badge-danger" : category === "C" ? "sdom-badge-warning" : "sdom-badge-success"}`}>
-                {t("Category")} {category}
-              </span>
-            )}
-            {category === "Untested" && (
-              <span className="sdom-badge sdom-badge-warning">{t("Untested")}</span>
+            {history.length === 0 ? (
+              <>
+                <span className={`sdom-badge ${
+                  (user.category || user.cat || "A") === "D" ? "sdom-badge-danger" : 
+                  (user.category || user.cat || "A") === "C" ? "sdom-badge-warning" : 
+                  "sdom-badge-success"
+                }`}>
+                  {t("Category")} {user.category || user.cat || "A"}
+                </span>
+                <span className="sdom-badge sdom-badge-warning">
+                  {t("Pending First Assessment")}
+                </span>
+              </>
+            ) : (
+              <>
+                {category !== "Untested" && (
+                  <span className={`sdom-badge ${category === "D" ? "sdom-badge-danger" : category === "C" ? "sdom-badge-warning" : "sdom-badge-success"}`}>
+                    {t("Category")} {category}
+                  </span>
+                )}
+                {category === "Untested" && (
+                  <span className="sdom-badge sdom-badge-warning">{t("Untested")}</span>
+                )}
+              </>
             )}
             {risk === "Untested" ? (
               <span className="sdom-badge" style={{ background: "#f3f4f6", color: "#4b5563" }}>{t("Untested")}</span>
@@ -70,7 +88,7 @@ export function TMProfile({
         </div>
         <div className="sdom-station-header-stats">
           <div className="sdom-station-header-stat">
-            <span className="val">{score > 0 ? score : "—"}</span>
+            <span className="val">{history.length > 0 && score > 0 ? score : t("No Assessment Taken")}</span>
             <span className="lbl">{t("Latest Score")}</span>
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }}/>
@@ -80,7 +98,7 @@ export function TMProfile({
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }}/>
           <div className="sdom-station-header-stat">
-            <span className="val">{history.length ? history[0].date : (user.joiningDate || trainManagerProfile.joiningDate)}</span>
+            <span className="val">{history.length ? history[0].date : t("No Assessment Taken")}</span>
             <span className="lbl">{t("Last Assessment")}</span>
           </div>
         </div>
@@ -164,7 +182,7 @@ export function TMProfile({
               </ResponsiveContainer>
             ) : (
               <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: "0.9rem" }}>
-                {t("No score history available (Untested)")}
+                {t("No Assessment Records Found")}
               </div>
             )}
           </div>

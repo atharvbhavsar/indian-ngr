@@ -1,0 +1,1331 @@
+[
+  {
+    "A": "STATION",
+    "B": "Name",
+    "C": "Desig",
+    "D": "PF no.",
+    "E": "HRMS id",
+    "F": "Mob. no.",
+    "G": "Grade in categorisation"
+  },
+  {
+    "A": null,
+    "B": null,
+    "C": "1.KRTH",
+    "D": null,
+    "E": null,
+    "F": null,
+    "G": null
+  },
+  {
+    "A": "KRTH",
+    "B": "ANUJ GUPTA",
+    "C": "Pointsman",
+    "D": "429808290",
+    "E": "SHIRYS",
+    "F": "7415057788",
+    "G": "B"
+  },
+  {
+    "A": "KRTH",
+    "B": "GOURAV KUMAR SUNANIYA",
+    "C": "Pointsman",
+    "D": "429808268",
+    "E": "ROYAHJ",
+    "F": "7804961326",
+    "G": "B"
+  },
+  {
+    "A": "KRTH",
+    "B": "JAL SINGH JATAV",
+    "C": "Station Master",
+    "D": "414860435",
+    "E": "RMPUUF",
+    "F": "9694151540",
+    "G": "B"
+  },
+  {
+    "A": "KRTH",
+    "B": "KRISHNA KUMAR",
+    "C": "Pointsman",
+    "D": "429808327",
+    "E": "KDZYPR",
+    "F": "6205889204",
+    "G": "B"
+  },
+  {
+    "A": "KRTH",
+    "B": "LAV KUSH AJIT",
+    "C": "Station Master",
+    "D": "474807511",
+    "E": "XDRLGY",
+    "F": "9302084394",
+    "G": "A"
+  },
+  {
+    "A": "KRTH",
+    "B": "PANKAJ KUMAR",
+    "C": "Pointsman",
+    "D": "474810261",
+    "E": "NDTLKO",
+    "F": "7667934395",
+    "G": "B"
+  },
+  {
+    "A": "KRTH",
+    "B": "PANKAJ KUMAR RAI",
+    "C": "Pointsman",
+    "D": "429805207",
+    "E": "MROAOP",
+    "F": "8340312105",
+    "G": "B",
+    "H": " "
+  },
+  {
+    "A": "KRTH",
+    "B": "SUDHIR TIWARI",
+    "C": "Station Master",
+    "D": "400869288",
+    "E": "OUFNSF",
+    "F": "9425042805",
+    "G": "A"
+  },
+  {
+    "C": "2.KSLA",
+    "D": null
+  },
+  {
+    "A": "KSLA",
+    "B": "Mithun Kumar thakur",
+    "C": "Pointsman",
+    "D": "29808607",
+    "E": "YDYMLI",
+    "F": "8271367479",
+    "G": "B"
+  },
+  {
+    "A": "KSLA",
+    "B": "PRAKASH",
+    "C": "pointsman",
+    "D": "5429804979",
+    "E": "DBYRLH",
+    "F": "7722870806",
+    "G": "B"
+  },
+  {
+    "A": "KSLA",
+    "B": "RAJESH KUMAR",
+    "C": "Station Master",
+    "D": "10763272",
+    "E": "GOAABM",
+    "F": "9308054121",
+    "G": "A"
+  },
+  {
+    "A": "KSLA",
+    "B": "RAJKUMAR JADHAV",
+    "C": "pointsman",
+    "D": "29805589",
+    "E": "MIYUZI",
+    "F": "9545278427",
+    "G": "C"
+  },
+  {
+    "A": "KSLA",
+    "B": "RAVINDRA DESHMUKH",
+    "C": "Station Master",
+    "D": "74812051",
+    "E": "OLZGYM",
+    "F": "9098514081",
+    "G": "B"
+  },
+  {
+    "A": "KSLA",
+    "B": "SATYAM GUPTA",
+    "C": "Pointsman",
+    "D": "29804979",
+    "E": "YKSYUK",
+    "F": "8009333930",
+    "G": "B"
+  },
+  {
+    "A": "KSLA",
+    "B": "Satyjeet kumar",
+    "C": "Station Master",
+    "D": "29805259",
+    "E": "XJREHP",
+    "F": "7870018518",
+    "G": "B"
+  },
+  {
+    "C": "3.TAKU",
+    "D": null,
+    "F": null
+  },
+  {
+    "A": "TAKU",
+    "B": "G. N. JHA",
+    "C": "Station Master",
+    "D": "407443020",
+    "E": "ZMAKSN",
+    "F": "9893197467",
+    "G": "A"
+  },
+  {
+    "A": "TAKU",
+    "B": "KARTIK",
+    "C": "Pointsman",
+    "D": "6529806845",
+    "E": "QOSNCC",
+    "F": "7000558585",
+    "G": "B"
+  },
+  {
+    "A": "TAKU",
+    "B": "PRASHANT PAWAR",
+    "C": "Pointsman",
+    "D": "429806804",
+    "E": "SFESLW",
+    "F": "8889056194",
+    "G": "B"
+  },
+  {
+    "A": "TAKU",
+    "B": "Rajesh prajapat",
+    "C": "pointsman",
+    "D": "429808317",
+    "E": "CEQGFD",
+    "F": "8459312938",
+    "G": "B"
+  },
+  {
+    "A": "TAKU",
+    "B": "RISHU PRAKASH",
+    "C": "Station Master",
+    "D": "429808660",
+    "E": "QLNXBB",
+    "F": "6204126785",
+    "G": "B"
+  },
+  {
+    "A": "TAKU",
+    "B": "SANTOSH KUMAR",
+    "C": "Station Master",
+    "D": "410763661",
+    "E": "AIQWCW",
+    "F": "7739012353",
+    "G": "B"
+  },
+  {
+    "A": "TAKU",
+    "B": "SR CHAUDHARY",
+    "C": "Station Master",
+    "D": "474809441",
+    "E": "IYCESK",
+    "F": "7218198995",
+    "G": "B"
+  },
+  {
+    "A": "TAKU",
+    "B": "YOGESH KUMAR",
+    "C": "Pointsman",
+    "D": "474800553",
+    "E": "QZTMNZ",
+    "F": "9399832961",
+    "G": "C"
+  },
+  {
+    "C": "4.SALI",
+    "D": null,
+    "F": null
+  },
+  {
+    "A": "SALI",
+    "B": "HIRALAL MEENA",
+    "C": "Pointsman",
+    "D": "410808188",
+    "E": "AQJTIS",
+    "F": "9785687256",
+    "G": "B"
+  },
+  {
+    "A": "SALI",
+    "B": "PRABHAT MALVI",
+    "C": "Pointsman",
+    "D": "45329806800",
+    "E": "KNJIYO",
+    "F": "7566108607",
+    "G": "B"
+  },
+  {
+    "A": "SALI",
+    "B": "RAGWENDRA TOMAR",
+    "C": "Station Master",
+    "D": "39229804680",
+    "E": "YMOANK",
+    "F": "9584918379",
+    "G": "B"
+  },
+  {
+    "A": "SALI",
+    "B": "Sandeep SINHA",
+    "C": "Station Master",
+    "D": "410763430",
+    "E": "MUMLFB",
+    "F": "9644893464",
+    "G": "A"
+  },
+  {
+    "A": "SALI",
+    "B": "SANJEEV DUBEY",
+    "C": "Station Master",
+    "D": "410763673",
+    "E": "AZGCYE",
+    "F": "9415510590",
+    "G": "A"
+  },
+  {
+    "A": "SALI",
+    "B": "SATYPRIY KUMAR",
+    "C": "Pointsman",
+    "D": "429805265",
+    "E": "RFIQEI",
+    "F": "9758422729",
+    "G": "B"
+  },
+  {
+    "A": "SALI",
+    "B": "Umesh gohiya",
+    "C": "Station master",
+    "D": "10764033",
+    "E": "UBSWYO",
+    "F": "9691499711",
+    "G": "B"
+  },
+  {
+    "C": "5.KQE",
+    "D": null
+  },
+  {
+    "A": "KQE",
+    "B": "DHARMENDRA TIWARI",
+    "C": "Pointsman",
+    "D": "429803430",
+    "E": "JDZLBB",
+    "F": "8827661663",
+    "G": "B"
+  },
+  {
+    "A": "KQE",
+    "B": "HEMRAJ MEENA",
+    "C": "Station Master",
+    "D": "429808653",
+    "E": "GFNJEA",
+    "F": "9694812985",
+    "G": "B"
+  },
+  {
+    "A": "KQE",
+    "B": "JITENDRA KUMAR NANGLOT",
+    "C": "Pointsman",
+    "D": "429808822",
+    "E": "AAEIOP",
+    "F": "9785483930",
+    "G": "B"
+  },
+  {
+    "A": "KQE",
+    "B": "RAVI KUMAR",
+    "C": "Station Master",
+    "D": "429808742",
+    "E": "EWKWOX",
+    "F": "9199745307",
+    "G": "B"
+  },
+  {
+    "A": "KQE",
+    "B": "S N TIWARI",
+    "C": "Station Master",
+    "D": "407422659",
+    "E": "FWGBCO",
+    "F": "9373012998",
+    "G": "A"
+  },
+  {
+    "A": "KQE",
+    "B": "SHIVPRASHAD KAPSE",
+    "C": "Pointsman",
+    "D": "410762024",
+    "E": "PYZPZK",
+    "F": "9584408358",
+    "G": "B"
+  },
+  {
+    "A": "KQE",
+    "B": "SUBHASH KUMAR",
+    "C": "pointsman",
+    "D": "429808947",
+    "E": "GSTEFZ",
+    "F": "7643908991",
+    "G": "B"
+  },
+  {
+    "A": "KQE",
+    "B": "VINAY KUMAR SINGH",
+    "C": "Station Master",
+    "D": "474810248",
+    "E": "MPNTEI",
+    "F": "7999504494",
+    "G": "B"
+  },
+  {
+    "C": "6.POX",
+    "D": null
+  },
+  {
+    "A": "POX",
+    "B": "AKASH PANTHI",
+    "C": "Station Master",
+    "D": "429801658",
+    "E": "SMFTCM",
+    "F": "7999645855",
+    "G": "A"
+  },
+  {
+    "A": "POX",
+    "B": "ANIKET YADAV",
+    "C": "pointsman",
+    "D": "429808954",
+    "E": "ZRSPFW",
+    "F": "8717957495",
+    "G": "B"
+  },
+  {
+    "A": "POX",
+    "B": "MOHD ABID",
+    "C": "Station Master",
+    "D": "410763314",
+    "E": "CKTWZU",
+    "F": "9340057621",
+    "G": "A"
+  },
+  {
+    "A": "POX",
+    "B": "PRADEEP CHOUKIKAR",
+    "C": "Station Master",
+    "D": "39213AB0575",
+    "E": "ARKKED",
+    "F": "9131161843",
+    "G": "B"
+  },
+  {
+    "A": "POX",
+    "B": "PRASHANT MISHRA",
+    "C": "Pointsman",
+    "D": "429808325",
+    "E": "UGXTSL",
+    "F": "9472887491",
+    "G": "A"
+  },
+  {
+    "A": "POX",
+    "B": "RAKESH KUMAR SAFI",
+    "C": "Station Master",
+    "D": "474809532",
+    "E": "RFETLA",
+    "F": "6260474585",
+    "G": "B"
+  },
+  {
+    "A": "POX",
+    "B": "SURESH KUMAR SHRIVASTAV",
+    "C": "Station Master",
+    "D": "474804870",
+    "E": "RMHXWE",
+    "F": "9131936472",
+    "G": "B"
+  },
+  {
+    "A": "POX",
+    "B": "VAJINDRA SINGH",
+    "C": "Pointsman",
+    "D": "410806969",
+    "E": "ZHEHBB",
+    "F": "7015140472",
+    "G": "B"
+  },
+  {
+    "A": "POX",
+    "B": "VIKASH SINGH",
+    "C": "Pointsman",
+    "D": "429808219",
+    "E": "NHPKWT",
+    "F": "6386965473",
+    "G": "A"
+  },
+  {
+    "A": "POX",
+    "B": "Vineet kumar",
+    "C": "Pointsman",
+    "D": "429808945",
+    "E": "USTRXW",
+    "F": "6230343082",
+    "G": "B"
+  },
+  {
+    "C": "7.DOH",
+    "D": null
+  },
+  {
+    "A": "DOH",
+    "B": "DHANRAJ GULAB",
+    "C": "Pointsman",
+    "D": "429804761",
+    "E": "IJBUAH",
+    "F": "9340208464",
+    "G": "C"
+  },
+  {
+    "A": "DOH",
+    "B": "GOKUL YADAV",
+    "C": "Pointsman",
+    "D": "474806440",
+    "E": "WIJUPX",
+    "F": "9753972758",
+    "G": "B"
+  },
+  {
+    "A": "DOH",
+    "B": "MATENDRA PRAKASH SINGH",
+    "C": "Pointsman",
+    "D": "4298807199",
+    "E": "JBJLSZ",
+    "F": "7870839049",
+    "G": "B"
+  },
+  {
+    "A": "DOH",
+    "B": "MUKESH MALVIYA",
+    "C": "Station Master",
+    "D": "474807780",
+    "E": "BHCUOW",
+    "F": "8120168089",
+    "G": "B"
+  },
+  {
+    "A": "DOH",
+    "B": "OMKAR PRASAD BADKUR",
+    "C": "Station Master",
+    "D": "410761342",
+    "E": "EDUURP",
+    "F": "9340759774",
+    "G": "B"
+  },
+  {
+    "A": "DOH",
+    "B": "RATNESH KUMAR",
+    "C": "Station Master",
+    "D": "474809696",
+    "E": "HCIYUB",
+    "F": "8871005547",
+    "G": "B"
+  },
+  {
+    "A": "DOH",
+    "B": "SHRAWAN MATHANKAR",
+    "C": "Pointsman",
+    "D": "474800012",
+    "E": "LOPFLJ",
+    "F": "7828579414",
+    "G": "B"
+  },
+  {
+    "A": "DOH",
+    "B": "Mohan lal meena",
+    "C": "Station Master",
+    "D": "403191205",
+    "E": "UFDKEM",
+    "F": "9753991022",
+    "G": "A"
+  },
+  {
+    "C": "8.MGRD",
+    "D": null
+  },
+  {
+    "A": "MGRD",
+    "B": "MAMTA GADRE",
+    "C": "Pointsman",
+    "D": "429806988",
+    "E": "XQKLGT",
+    "F": "6262542793",
+    "G": "B"
+  },
+  {
+    "A": "MGRD",
+    "B": "PRADEEP YADAV",
+    "C": "Pointsman",
+    "D": "429805375",
+    "E": "SZZUKU",
+    "F": "8435901040",
+    "G": "A"
+  },
+  {
+    "A": "MGRD",
+    "B": "RAM SINGH SONPURRE",
+    "C": "Station Master",
+    "D": "474812348",
+    "E": "GREAHA",
+    "F": "9630772639",
+    "G": "B"
+  },
+  {
+    "A": "MGRD",
+    "B": "RANJEET PRASAD",
+    "C": "Station Master",
+    "D": "474807857",
+    "E": "HCWZEZ",
+    "F": "9766948965",
+    "G": "B"
+  },
+  {
+    "A": "MGRD",
+    "B": "REETIKA MALVI",
+    "C": "Pointsman",
+    "D": "45316237572",
+    "E": "ASRMLD",
+    "F": "8602407947",
+    "G": "A"
+  },
+  {
+    "C": "9.BBTR",
+    "D": null
+  },
+  {
+    "A": "BBTR",
+    "B": "A. K. SINGH",
+    "C": "Station Master",
+    "D": "429804581",
+    "E": "KMBGFY",
+    "F": "9523065655",
+    "G": "B"
+  },
+  {
+    "A": "BBTR",
+    "B": "A. k. YADAV",
+    "C": "Station Master",
+    "D": "474807742",
+    "E": "FJBEME",
+    "F": "7089210070",
+    "G": "A"
+  },
+  {
+    "A": "BBTR",
+    "B": "BIPIN KUMAR",
+    "C": "Pointsman",
+    "D": "410764069",
+    "E": "ZXHOJO",
+    "F": "9534715629",
+    "G": "B"
+  },
+  {
+    "A": "BBTR",
+    "B": "DUSHYANT PATEL",
+    "C": "Station Master",
+    "D": "429804581",
+    "E": "CNPUSS",
+    "F": "9755659595",
+    "G": "B"
+  },
+  {
+    "A": "BBTR",
+    "B": "HEMLATA",
+    "C": "Pointsman",
+    "D": "410761184",
+    "E": "YMLUPM",
+    "F": "7587959980",
+    "G": "B"
+  },
+  {
+    "A": "BBTR",
+    "B": "JASVANT SINGH",
+    "C": "Pointsman",
+    "D": "429805167",
+    "E": "MJONIX",
+    "F": "8433237572",
+    "G": "A"
+  },
+  {
+    "A": "BBTR",
+    "B": "MEETHUN KUMAR",
+    "C": "Pointsman",
+    "D": "429804414",
+    "E": "FQPFSU",
+    "F": "9534915779",
+    "G": "B"
+  },
+  {
+    "A": "BBTR",
+    "B": "S. K. SONI",
+    "C": "Station Master",
+    "D": "400734494",
+    "E": "XSXUSO",
+    "F": "9826321320",
+    "G": "B"
+  },
+  {
+    "A": "BBTR",
+    "B": "SANDEEP",
+    "C": "Pointsman",
+    "D": "474809234",
+    "E": "WYYUDU",
+    "F": "9179772190",
+    "G": "B"
+  },
+  {
+    "A": "BBTR",
+    "B": "Vikash kumar",
+    "C": "pointsman",
+    "D": "429808286",
+    "E": "OXUEBQ",
+    "F": "7250460213",
+    "G": "B"
+  },
+  {
+    "C": "10.GDYA",
+    "D": null
+  },
+  {
+    "A": "GDYA",
+    "B": "A. K. SHRIVASTAV",
+    "C": "Station Master",
+    "D": "474803621",
+    "E": "MHNXCT",
+    "F": "9981757323",
+    "G": "A"
+  },
+  {
+    "A": "GDYA",
+    "B": "Ankit Kumar Sharma",
+    "C": "Pointsman",
+    "D": "429807203",
+    "E": "IPXPRE",
+    "F": "8319547148",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "ANUJ DAS",
+    "C": "Pointsman",
+    "D": "474810273",
+    "E": "ZDTANL",
+    "F": "8463033442",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "ARBIND KUMAR",
+    "C": "Pointsman",
+    "D": "429805236",
+    "E": "RKSSMW",
+    "F": "8789058208",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "DEVKANT",
+    "C": "Pointsman",
+    "D": "429805261",
+    "E": "FWKFDM",
+    "F": "8115577930",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "DHARMENDRA KUMAR",
+    "C": "Station Master",
+    "D": "474801144",
+    "E": "OCFUMI",
+    "F": "8878557557",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "DIGVIJAY SINGH",
+    "C": "Station Master",
+    "D": "39529804359",
+    "E": "DMNRHO",
+    "F": "9806367849",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "Firoj khan",
+    "C": "pointsman",
+    "D": "407420079",
+    "E": "GBBRFA",
+    "F": "9406566518",
+    "G": "A"
+  },
+  {
+    "A": "GDYA",
+    "B": "HEMRAJ NAGLE",
+    "C": "Pointsman",
+    "D": "474804558",
+    "E": "XXNXSE",
+    "F": "9575052858",
+    "G": "A"
+  },
+  {
+    "A": "GDYA",
+    "B": "Kamlesh kumar meena",
+    "C": "Station Master",
+    "D": "410764045",
+    "E": "EQFYWS",
+    "F": "9694127007",
+    "G": "A"
+  },
+  {
+    "A": "GDYA",
+    "B": "NAVIN KUMAR",
+    "C": "Pointsman",
+    "D": "474803580",
+    "E": "EMRMLM",
+    "F": "7999550651",
+    "G": "A"
+  },
+  {
+    "A": "GDYA",
+    "B": "Pramila Patil",
+    "C": "Pointsman",
+    "D": "474817978",
+    "E": "NMNEOS",
+    "F": "9595378537",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "RAMAVATAR",
+    "C": "Pointsman",
+    "D": "407443833",
+    "E": "SAJOAJ",
+    "F": "9893324581",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "RISHI RANJAN RAL",
+    "C": "Pointsman",
+    "D": "429807276",
+    "E": "MHNOWY",
+    "F": "8004395873",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "SACHIDANAND SAHA",
+    "C": "Pointsman",
+    "D": "474808450",
+    "E": "YZRFAC",
+    "F": "9359808966",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "Satyabhama",
+    "C": "Pointsman",
+    "D": "474832608",
+    "E": "OWIUCL",
+    "F": "7499312970",
+    "G": "B"
+  },
+  {
+    "A": "GDYA",
+    "B": "SINTU KUMAR",
+    "C": "Pointsman",
+    "D": "429803236",
+    "E": "BSPZOH",
+    "F": "9325585415",
+    "G": "A"
+  },
+  {
+    "A": "GDYA",
+    "B": "SUNIL KUMAR",
+    "C": "Pointsman",
+    "D": "474811873",
+    "E": "WKPTLY",
+    "F": "8789812266",
+    "G": "A"
+  },
+  {
+    "A": "GDYA",
+    "B": "Umesh kumar",
+    "C": "pointsman",
+    "D": "429805266",
+    "E": "DLMNHP",
+    "F": "7545850772",
+    "G": "A"
+  },
+  {
+    "A": "GDYA",
+    "B": "V. K. PRUSTY",
+    "C": "Station Master",
+    "D": "407443341",
+    "E": "JMYTOY",
+    "F": "9406939574",
+    "G": "A"
+  },
+  {
+    "C": "11.DHQ",
+    "D": null
+  },
+  {
+    "A": "DHQ",
+    "B": "Abhay Khatarkar",
+    "C": "Pointsman",
+    "D": "24229804774",
+    "E": "LLHPXO",
+    "F": "8965953214",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "ANIL DAYARAM CHOUHAN",
+    "C": "Pointsman",
+    "D": "429805984",
+    "E": "XRLWIB",
+    "F": "9617383281",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Bhojraj Jounjare",
+    "C": "Pointsman",
+    "D": "429806418",
+    "E": "FYLKZI",
+    "F": "7697623969",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "C P MISHRA",
+    "C": "Station Master",
+    "D": "405960104",
+    "E": "GFBUUE",
+    "F": "7972512973",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Chandan Kumar",
+    "C": "Station Master",
+    "D": "429805252",
+    "E": "SABOSX",
+    "F": "9199500754",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "D. S. PARIHAR",
+    "C": "Station Master",
+    "D": "474801156",
+    "E": "MTPDRC",
+    "F": "9893639774",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Hemraj Bhalawi",
+    "C": "Pointsman",
+    "D": "429808372",
+    "E": "KJJDDD",
+    "F": "7489230753",
+    "G": "C"
+  },
+  {
+    "A": "DHQ",
+    "B": "Krishna Kumar Solanki",
+    "C": "Pointsman",
+    "D": "474812300",
+    "E": "QRLBFG",
+    "F": "7999664751",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Manish ku. Barange",
+    "C": "Pointsman",
+    "D": "429808230",
+    "E": "UCYDAQ",
+    "F": "9584484404",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Mohan Ramrao wagadre",
+    "C": "Pointsman",
+    "D": "45329804623",
+    "E": "ZGCURS",
+    "F": "9827838929",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Nasreen sheikh",
+    "C": "Pointsman",
+    "D": "429800598",
+    "E": "LHSOUR",
+    "F": "8085436131",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Pooja Sahu",
+    "C": "Pointsman",
+    "D": "429808225",
+    "E": "OGUEZI",
+    "F": "9754449670",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Pradeep Soni",
+    "C": "Station Master",
+    "D": "410763399",
+    "E": "YXUSDB",
+    "F": "8817505234",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Pritesh Nagle",
+    "C": "Station Master",
+    "D": "506014630",
+    "E": "TFPKRA",
+    "F": "9981548489",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Rajesh Atulkar",
+    "C": "Pointsman",
+    "D": "410761305",
+    "E": "YDTPAR",
+    "F": "7974648739",
+    "G": "C"
+  },
+  {
+    "A": "DHQ",
+    "B": "S. Sahani",
+    "C": "Station Master",
+    "D": "429801660",
+    "E": "LOMTDP",
+    "F": "9304767521",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Sanju Kammu Dhurve",
+    "C": "Pointsman",
+    "D": "410761718",
+    "E": "EOHDPM",
+    "F": "7974772810",
+    "G": "B"
+  },
+  {
+    "A": "DHQ",
+    "B": "Santosh Hemraj Pawar",
+    "C": "Pointsman",
+    "D": "474808242",
+    "E": "ZOIBKG",
+    "F": "8103446210",
+    "G": "C"
+  },
+  {
+    "A": "DHQ",
+    "B": "SHUBHAM DESHMUKH",
+    "C": "Station Master",
+    "D": "45229807776",
+    "E": "TUJUHQ",
+    "F": "9589841864",
+    "G": "B"
+  },
+  {
+    "C": "12.MJY",
+    "D": null
+  },
+  {
+    "A": "MJY",
+    "B": "ASHOK THAKRE",
+    "C": "Pointsman",
+    "D": "410761858",
+    "E": "HWAEXB",
+    "F": "9584091889",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "BABLU DESHMUKH",
+    "C": "Pointsman",
+    "D": "474808230",
+    "E": "UYLLYL",
+    "F": "9754164218",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "C. K. NAGLE",
+    "C": "Station Master",
+    "D": "414633693",
+    "E": "UYSXBA",
+    "F": "9424415004",
+    "G": "A"
+  },
+  {
+    "A": "MJY",
+    "B": "GABBER SINGH",
+    "C": "Pointsman",
+    "D": "474807298",
+    "E": "FBOGAI",
+    "F": "9617197409",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "KAMAL KISHOR",
+    "C": "Pointsman",
+    "D": "414761949",
+    "E": "GGSCCN",
+    "F": "9425656432",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "M. A QURESHI",
+    "C": "Station Master",
+    "D": "407443547",
+    "E": "MDPCLG",
+    "F": "9806053738",
+    "G": "A"
+  },
+  {
+    "A": "MJY",
+    "B": "MAHESH SAARTHE",
+    "C": "Pointsman",
+    "D": "474809842",
+    "E": "QHFZMA",
+    "F": "7692812096",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "NITESH MALVIYA",
+    "C": "Pointsman",
+    "D": "429805210",
+    "E": "EPJXWN",
+    "F": "8109644942",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "PANKAJ DESHMUKH",
+    "C": "Pointsman",
+    "D": "50819140579",
+    "E": "TCBBKO",
+    "F": "7723075436",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "PAWAN CHOUKIKAR",
+    "C": "Pointsman",
+    "D": "474807937",
+    "E": "RPJRFS",
+    "F": "8109146837",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "RADHESHYAAM",
+    "C": "Pointsman",
+    "D": "410762115",
+    "E": "GARSRK",
+    "F": "9575520932",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "RADHESHYAAM SONI",
+    "C": "Station Master",
+    "D": "474807500",
+    "E": "AHMWGQ",
+    "F": "6261461750",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "RAJESH PAWAR",
+    "C": "Pointsman",
+    "D": "45616327716",
+    "E": "BSWSXF",
+    "F": "8719820942",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "RAMESH PAWAR",
+    "C": "Station Master",
+    "D": "474802471",
+    "E": "FCAYJK",
+    "F": "8962177559",
+    "G": "B"
+  },
+  {
+    "A": "MJY",
+    "B": "SANJAY DAWANDE",
+    "C": "Pointsman",
+    "D": "410761937",
+    "E": "HDCDZQ",
+    "F": "7499512990",
+    "G": "B"
+  },
+  {
+    "C": "13.BZU",
+    "D": null
+  },
+  {
+    "A": "BZU",
+    "B": "A. K. JHA",
+    "C": "Station Master",
+    "D": "40734484",
+    "E": "DZURDG",
+    "F": "9425636760",
+    "G": "A"
+  },
+  {
+    "A": "BZU",
+    "B": "ANIL SABLE",
+    "C": "Pointsman",
+    "D": "407443791",
+    "E": "JAOAKE",
+    "F": "9406567170",
+    "G": "B"
+  },
+  {
+    "A": "BZU",
+    "B": "BHUSHAN CHOUDHRI",
+    "C": "Pointsman",
+    "D": "474812373",
+    "E": "DOWHEQ",
+    "F": "8485884034",
+    "G": "B"
+  },
+  {
+    "A": "BZU",
+    "B": "DURGESH RATHORE",
+    "C": "Pointsman",
+    "D": "474808047",
+    "E": "WCHESA",
+    "F": "8839379533",
+    "G": "B"
+  },
+  {
+    "A": "BZU",
+    "B": "NS MEENA",
+    "C": "Station Master",
+    "D": "474810674",
+    "E": "ORNSNS",
+    "F": "8878413139",
+    "G": "A"
+  },
+  {
+    "A": "BZU",
+    "B": "PARASRAM GADVE",
+    "C": "Pointsman",
+    "D": "407419788",
+    "E": "HFYLAI",
+    "F": "9407596463",
+    "G": "B"
+  },
+  {
+    "A": "BZU",
+    "B": "PARASRAM HEMU",
+    "C": "Pointsman",
+    "D": "474800024",
+    "E": "BABKYT",
+    "F": "9479909981",
+    "G": "B"
+  },
+  {
+    "A": "BZU",
+    "B": "R. K. GUPTA",
+    "C": "TI",
+    "D": "474807055",
+    "E": "WDMFKP",
+    "F": "7389902918",
+    "G": "A"
+  },
+  {
+    "A": "BZU",
+    "B": "RAJESH SISODIYA",
+    "C": "Pointsman",
+    "D": "474802756",
+    "E": "KODTBJ",
+    "F": "9584631014",
+    "G": "B"
+  },
+  {
+    "A": "BZU",
+    "B": "S. D. ASLE",
+    "C": "Station Master",
+    "D": "408618987",
+    "E": "QOUWNS",
+    "F": "9406521418",
+    "G": "A"
+  },
+  {
+    "A": "BZU",
+    "B": "S. K. DHOTE",
+    "C": "Station Master",
+    "D": "400734484",
+    "E": "PJTLPL",
+    "F": "9425610220",
+    "G": "A"
+  },
+  {
+    "A": "BZU",
+    "B": "SMT. SHEETAL YADAV",
+    "C": "Pointsman",
+    "D": "474810091",
+    "E": "GIPSKK",
+    "F": "9340096115",
+    "G": "B"
+  },
+  {
+    "A": "BZU",
+    "B": "SUNIL MOKHDE",
+    "C": "pointsman",
+    "D": "407443778",
+    "E": "CKKHPP",
+    "F": "9617383536",
+    "G": "B"
+  },
+  {
+    "A": "BZU",
+    "B": "V.K. WAKDE",
+    "C": "Station Master",
+    "D": "400555606",
+    "E": "HZTEDR",
+    "F": "9424443480",
+    "G": "A"
+  },
+  {
+    "A": "BZU",
+    "B": "VIJAY BUADE",
+    "C": "Pointsman",
+    "D": "474805277",
+    "E": "WHSFEG",
+    "F": "9993452753",
+    "G": "B"
+  }
+]

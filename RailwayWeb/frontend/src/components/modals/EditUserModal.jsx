@@ -146,6 +146,23 @@ export default function EditUserModal({
                   {myStations.map(s => <option key={s.id || s.name} value={s.name}>{s.name} ({s.code})</option>)}
                 </select>
               </div>
+              <div className="sdom-modal-field">
+                <label>Safety Category *</label>
+                <select
+                  value={editingUser.category || "Untested"}
+                  onChange={e => {
+                    const catVal = e.target.value;
+                    setEditingUser({ ...editingUser, category: catVal, cat: catVal });
+                  }}
+                  required
+                >
+                  <option value="Untested">Untested</option>
+                  <option value="A">Category A</option>
+                  <option value="B">Category B</option>
+                  <option value="C">Category C</option>
+                  <option value="D">Category D</option>
+                </select>
+              </div>
             </div>
           </div>
 

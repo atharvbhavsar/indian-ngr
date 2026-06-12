@@ -1138,36 +1138,40 @@ export function useAomState(user, onLogout) {
 
   const allEmployees = useMemo(() => {
     return [
-      ...aomPointsmen.map((p) => ({
-        hrmsId: p.hrmsId,
-        name: p.name,
-        gender: p.gender || "Male",
-        age: p.age || 35,
-        doj: p.doj || "2018-06-15",
-        basePay: p.basePay || "₹28,500",
-        designation: "Pointsman",
-        role: "pointsmen",
-        stationName: p.stationName,
-        stationCode: p.stationCode,
-        division: p.division || "Nagpur",
-        zone: p.zone || "CR",
-        category: p.cat || getPmCat(p.lastScore),
-        riskLevel: p.risk || getPmRisk(p),
-        assessmentStatus: p.approvalStatus,
-        lastScore: p.lastScore,
-        safetyScore: p.safetyScore,
-        totalAssessments: p.totalAssessments,
-        lastAssessedDate: p.lastAssessDate || p.lastAssessedDate || p.doj || "2026-03-28",
-        monitoringStatus: deactivatedUserIds.has(p.hrmsId) ? "Deactivated" : (p.monitoringStatus || "Active"),
-        contactNumber: p.contact || "—",
-        emailId: p.email || `${p.hrmsId.toLowerCase()}@rail.in`,
-        pmeStatus: p.pmeStatus || "Fit",
-        pmeDueDate: p.pmeDueDate || null,
-        pmeDoneDate: p.pmeDoneDate || null,
-        refStatus: p.refStatus || "Cleared"
-      })),
+      ...aomPointsmen.map((p) => {
+        const isUnassessed = p.approvalStatus === "Pending First Assessment" || p.status === "Pending First Assessment";
+        return {
+          hrmsId: p.hrmsId,
+          name: p.name,
+          gender: p.gender || "Male",
+          age: p.age || 35,
+          doj: p.doj || "2018-06-15",
+          basePay: p.basePay || "₹28,500",
+          designation: "Pointsman",
+          role: "pointsmen",
+          stationName: p.stationName,
+          stationCode: p.stationCode,
+          division: p.division || "Nagpur",
+          zone: p.zone || "CR",
+          category: p.cat || getPmCat(p.lastScore),
+          riskLevel: p.risk || getPmRisk(p),
+          assessmentStatus: p.approvalStatus,
+          lastScore: isUnassessed ? null : p.lastScore,
+          safetyScore: isUnassessed ? null : p.safetyScore,
+          totalAssessments: isUnassessed ? 0 : p.totalAssessments,
+          lastAssessedDate: isUnassessed ? "No Assessment Taken" : (p.lastAssessDate || p.doj || "2026-03-28"),
+          monitoringStatus: deactivatedUserIds.has(p.hrmsId) ? "Deactivated" : (p.monitoringStatus || "Active"),
+          contactNumber: p.contact || "—",
+          emailId: p.email || `${p.hrmsId.toLowerCase()}@rail.in`,
+          pmeStatus: p.pmeStatus || "Fit",
+          pmeDueDate: p.pmeDueDate || null,
+          pmeDoneDate: p.pmeDoneDate || null,
+          refStatus: p.refStatus || "Cleared"
+        };
+      }),
       ...aomStationMasters.map((sm, idx) => {
         const smHrmsId = sm.hrmsId || sm.id || `SM_${1001 + idx}`;
+        const isUnassessed = sm.approvalStatus === "Pending First Assessment" || sm.status === "Pending First Assessment";
         return {
           hrmsId: smHrmsId,
           name: sm.name,
@@ -1183,11 +1187,11 @@ export function useAomState(user, onLogout) {
           zone: sm.zone || "CR",
           category: sm.cat || "A",
           riskLevel: sm.riskLevel || sm.risk || "Low",
-          assessmentStatus: sm.approvalStatus || "Approved",
-          lastScore: sm.lastScore || sm.score || 85,
-          safetyScore: sm.safetyScore || 90,
-          totalAssessments: sm.totalAssessments || 10,
-          lastAssessedDate: sm.lastAssessedDate || sm.lastAssessDate || sm.doj || "2026-04-12",
+          assessmentStatus: sm.approvalStatus || sm.status || "Approved",
+          lastScore: isUnassessed ? null : (sm.lastScore || sm.score || 0),
+          safetyScore: isUnassessed ? null : (sm.safetyScore || 0),
+          totalAssessments: isUnassessed ? 0 : (sm.totalAssessments || 0),
+          lastAssessedDate: isUnassessed ? "No Assessment Taken" : (sm.lastAssessedDate || sm.lastAssessDate || sm.doj || null),
           monitoringStatus: deactivatedUserIds.has(smHrmsId) ? "Deactivated" : (sm.monitoringStatus || "Active"),
           contactNumber: sm.contactNumber || sm.contact || "—",
           emailId: sm.emailId || sm.email || `${smHrmsId.toLowerCase()}@rail.in`,
@@ -1197,95 +1201,104 @@ export function useAomState(user, onLogout) {
           refStatus: sm.refStatus || "Cleared"
         };
       }),
-      ...aomSuperintendents.map((ss) => ({
-        hrmsId: ss.employeeId,
-        name: ss.name,
-        gender: "Male",
-        age: 46,
-        doj: "2008-03-12",
-        basePay: "₹62,000",
-        designation: "Station Superintendent",
-        role: "ss",
-        stationName: ss.station,
-        stationCode: ss.stationCode || (ss.station === "Nagpur Junction" ? "NGP" : "PBN"),
-        division: ss.division,
-        zone: ss.zone || "CR",
-        category: ss.cat || "A",
-        riskLevel: ss.risk || "Low",
-        assessmentStatus: ss.status || ss.approvalStatus || "Approved",
-        lastScore: ss.score,
-        safetyScore: ss.score + 4,
-        totalAssessments: 11,
-        lastAssessedDate: ss.lastDate || ss.doj || "2026-04-18",
-        monitoringStatus: deactivatedUserIds.has(ss.employeeId) ? "Deactivated" : "Active",
-        contactNumber: ss.contact || "—",
-        emailId: ss.email || `${ss.employeeId.toLowerCase()}@rail.in`,
-        pmeStatus: ss.pmeStatus || "Fit",
-        pmeDueDate: ss.pmeDueDate || null,
-        pmeDoneDate: ss.pmeDoneDate || null,
-        refStatus: ss.refStatus || "Cleared"
-      })),
-      ...aomTrainManagers.map((tm) => ({
-        hrmsId: tm.employeeId,
-        name: tm.name,
-        gender: "Male",
-        age: 39,
-        doj: "2014-09-05",
-        basePay: "₹48,000",
-        designation: "Train Manager",
-        role: "tm",
-        stationName: tm.station,
-        stationCode: tm.stationCode || (tm.station === "Nagpur Junction" ? "NGP" : "AMLA"),
-        division: tm.division,
-        zone: tm.zone || "CR",
-        category: tm.cat || "A",
-        riskLevel: tm.risk || "Low",
-        assessmentStatus: tm.status || tm.approvalStatus || "Approved",
-        lastScore: tm.score,
-        safetyScore: tm.score + 3,
-        totalAssessments: 8,
-        lastAssessedDate: tm.lastDate || tm.doj || "2026-04-14",
-        monitoringStatus: deactivatedUserIds.has(tm.employeeId) ? "Deactivated" : "Active",
-        contactNumber: tm.contact || "—",
-        emailId: tm.email || `${tm.employeeId.toLowerCase()}@rail.in`,
-        workLocation: tm.workLocation || "Nagpur Depot",
-        reportingSm: tm.reportingSm || "NGP-BSL Section",
-        shift: tm.shift || "Goods Train Beat",
-        pmeStatus: tm.pmeStatus || "Fit",
-        pmeDueDate: tm.pmeDueDate || null,
-        pmeDoneDate: tm.pmeDoneDate || null,
-        refStatus: tm.refStatus || "Cleared"
-      })),
-      ...trafficInspectors.map((ti, idx) => ({
-        hrmsId: ti.employeeId,
-        name: ti.name,
-        gender: "Male",
-        age: 48,
-        doj: "2006-11-20",
-        basePay: "₹68,000",
-        designation: "Traffic Inspector",
-        role: "ti",
-        stationName: ti.stationName || ti.station || "Division HQ",
-        stationCode: ti.stationCode || (ti.stationName === "Nagpur Junction" ? "NGP" : ti.stationName === "Parbhani Junction" ? "PBN" : "AMLA"),
-        division: ti.division || "Nagpur",
-        zone: ti.zone || "CR",
-        category: ti.cat || ti.category || "A",
-        riskLevel: ti.risk || ti.riskLevel || "Low",
-        assessmentStatus: ti.status || ti.approvalStatus || "Approved",
-        lastScore: ti.lastScore || ti.score || 88,
-        safetyScore: 95,
-        totalAssessments: 8,
-        lastAssessedDate: ti.lastDate || ti.doj || "2026-03-15",
-        monitoringStatus: deactivatedUserIds.has(ti.employeeId) ? "Deactivated" : "Active",
-        contactNumber: ti.contact || ti.phone || "—",
-        emailId: ti.email || `${ti.employeeId.toLowerCase()}@rail.in`,
-        pmeStatus: ti.pmeStatus || "Fit",
-        pmeDueDate: ti.pmeDueDate || null,
-        pmeDoneDate: ti.pmeDoneDate || null,
-        refStatus: ti.refStatus || "Cleared",
-        jurisdiction: ti.jurisdiction || "",
-        linkedStations: ti.linkedStations || ""
-      }))
+      ...aomSuperintendents.map((ss) => {
+        const isUnassessed = ss.status === "Pending First Assessment" || ss.approvalStatus === "Pending First Assessment";
+        return {
+          hrmsId: ss.employeeId,
+          name: ss.name,
+          gender: "Male",
+          age: 46,
+          doj: "2008-03-12",
+          basePay: "₹62,000",
+          designation: "Station Superintendent",
+          role: "ss",
+          stationName: ss.station,
+          stationCode: ss.stationCode || (ss.station === "Nagpur Junction" ? "NGP" : "PBN"),
+          division: ss.division,
+          zone: ss.zone || "CR",
+          category: ss.cat || "A",
+          riskLevel: ss.risk || "Low",
+          assessmentStatus: ss.status || ss.approvalStatus || "Approved",
+          lastScore: isUnassessed ? null : ss.score,
+          safetyScore: isUnassessed ? null : (ss.score + 4),
+          totalAssessments: isUnassessed ? 0 : 11,
+          lastAssessedDate: isUnassessed ? "No Assessment Taken" : (ss.lastDate || ss.doj || "2026-04-18"),
+          monitoringStatus: deactivatedUserIds.has(ss.employeeId) ? "Deactivated" : "Active",
+          contactNumber: ss.contact || "—",
+          emailId: ss.email || `${ss.employeeId.toLowerCase()}@rail.in`,
+          pmeStatus: ss.pmeStatus || "Fit",
+          pmeDueDate: ss.pmeDueDate || null,
+          pmeDoneDate: ss.pmeDoneDate || null,
+          refStatus: ss.refStatus || "Cleared"
+        };
+      }),
+      ...aomTrainManagers.map((tm) => {
+        const isUnassessed = tm.status === "Pending First Assessment" || tm.approvalStatus === "Pending First Assessment";
+        return {
+          hrmsId: tm.employeeId,
+          name: tm.name,
+          gender: "Male",
+          age: 39,
+          doj: "2014-09-05",
+          basePay: "₹48,000",
+          designation: "Train Manager",
+          role: "tm",
+          stationName: tm.station,
+          stationCode: tm.stationCode || (tm.station === "Nagpur Junction" ? "NGP" : tm.station === "AMLA" ? "AMLA" : "NGP"),
+          division: tm.division,
+          zone: tm.zone || "CR",
+          category: tm.cat || "A",
+          riskLevel: tm.risk || "Low",
+          assessmentStatus: tm.status || tm.approvalStatus || "Approved",
+          lastScore: isUnassessed ? null : tm.score,
+          safetyScore: isUnassessed ? null : (tm.score + 3),
+          totalAssessments: isUnassessed ? 0 : 8,
+          lastAssessedDate: isUnassessed ? "No Assessment Taken" : (tm.lastDate || tm.doj || "2026-04-14"),
+          monitoringStatus: deactivatedUserIds.has(tm.employeeId) ? "Deactivated" : "Active",
+          contactNumber: tm.contact || "—",
+          emailId: tm.email || `${tm.employeeId.toLowerCase()}@rail.in`,
+          workLocation: tm.workLocation || "Nagpur Depot",
+          reportingSm: tm.reportingSm || "NGP-BSL Section",
+          shift: tm.shift || "Goods Train Beat",
+          pmeStatus: tm.pmeStatus || "Fit",
+          pmeDueDate: tm.pmeDueDate || null,
+          pmeDoneDate: tm.pmeDoneDate || null,
+          refStatus: tm.refStatus || "Cleared"
+        };
+      }),
+      ...trafficInspectors.map((ti, idx) => {
+        const isUnassessed = ti.status === "Pending First Assessment" || ti.approvalStatus === "Pending First Assessment";
+        return {
+          hrmsId: ti.employeeId,
+          name: ti.name,
+          gender: "Male",
+          age: 48,
+          doj: "2006-11-20",
+          basePay: "₹68,000",
+          designation: "Traffic Inspector",
+          role: "ti",
+          stationName: ti.stationName || ti.station || "Division HQ",
+          stationCode: ti.stationCode || (ti.stationName === "Nagpur Junction" ? "NGP" : ti.stationName === "Parbhani Junction" ? "PBN" : "AMLA"),
+          division: ti.division || "Nagpur",
+          zone: ti.zone || "CR",
+          category: ti.cat || ti.category || "A",
+          riskLevel: ti.risk || ti.riskLevel || "Low",
+          assessmentStatus: ti.status || ti.approvalStatus || "Approved",
+          lastScore: isUnassessed ? null : (ti.lastScore || ti.score || 88),
+          safetyScore: isUnassessed ? null : 95,
+          totalAssessments: isUnassessed ? 0 : (ti.totalAssessments || 8),
+          lastAssessedDate: isUnassessed ? "No Assessment Taken" : (ti.lastDate || ti.doj || "2026-03-15"),
+          monitoringStatus: deactivatedUserIds.has(ti.employeeId) ? "Deactivated" : "Active",
+          contactNumber: ti.contact || ti.phone || "—",
+          emailId: ti.email || `${ti.employeeId.toLowerCase()}@rail.in`,
+          pmeStatus: ti.pmeStatus || "Fit",
+          pmeDueDate: ti.pmeDueDate || null,
+          pmeDoneDate: ti.pmeDoneDate || null,
+          refStatus: ti.refStatus || "Cleared",
+          jurisdiction: ti.jurisdiction || "",
+          linkedStations: ti.linkedStations || ""
+        };
+      })
     ];
   }, [aomPointsmen, aomStationMasters, stations, aomSuperintendents, aomTrainManagers, trafficInspectors, deactivatedUserIds]);
 
@@ -3096,39 +3109,29 @@ export function useAomState(user, onLogout) {
   };
 
   const renderPointsmanMonitoringDetail = (pm) => {
-    const cat = getPmCat(pm.lastScore);
-    const risk = getPmRisk(pm);
+    const cat = pm.cat || "A";
+    const risk = pm.risk || "Low";
 
-    // Mock assessment history for pointsman
-    const pmAssessmentHistoryMock = {
-      PM_1001: [
-        { date: "2026-03-28", testMarks: 80, addMarks: 12, total: 92, grade: "A", approvalStatus: "Approved", remarks: "Excellent yard duties and signaling knowledge." },
-        { date: "2025-12-15", testMarks: 74, addMarks: 10, total: 84, grade: "A", approvalStatus: "Approved", remarks: "Solid performance under winter operations." }
-      ],
-      PM_1102: [
-        { date: "2026-03-10", testMarks: 65, addMarks: 13, total: 78, grade: "B", approvalStatus: "Pending", remarks: "Demonstrates consistent safety alertness." }
-      ],
-      PM_1103: [
-        { date: "2026-02-15", testMarks: 38, addMarks: 10, total: 48, grade: "C", approvalStatus: "Approved", remarks: "Requires strict adherence to signal placement guidelines." }
-      ],
-      PM_1104: [
-        { date: "2026-03-18", testMarks: 72, addMarks: 12, total: 84, grade: "A", approvalStatus: "Pending", remarks: "Very proactive and vigilant on main line siding duties." }
-      ],
-      PM_1105: [
-        { date: "2026-01-20", testMarks: 25, addMarks: 10, total: 35, grade: "D", approvalStatus: "Rejected", remarks: "Unsatisfactory compliance on hand signaling drills." }
-      ],
-      PM_1106: [
-        { date: "2026-03-05", testMarks: 55, addMarks: 12, total: 67, grade: "B", approvalStatus: "Approved", remarks: "Alert and prompt response to train siding movements." }
-      ],
-      PM_1107: [
-        { date: "2026-03-20", testMarks: 70, addMarks: 12, total: 82, grade: "A", approvalStatus: "Approved", remarks: "Outstanding safety observance during high traffic shift." }
-      ],
-      PM_1108: [
-        { date: "2026-02-01", testMarks: 12, addMarks: 7, total: 19, grade: "D", approvalStatus: "Rejected", remarks: "Severe safety oversight near point 4B. Re-training mandatory." }
-      ]
-    };
-
-    const hist = pmAssessmentHistoryMock[pm.hrmsId] || [];
+    // Load actual assessment attempts dynamically from allDbAssessments
+    const userDbAssessments = allDbAssessments.filter(a => a.employee?.hrms_id === pm.hrmsId);
+    const hist = userDbAssessments.map(a => {
+      const score = a.TEST_ATTEMPT?.[0]?.obtained_marks || 0;
+      const subDate = a.assessment_date ? new Date(a.assessment_date).toISOString().slice(0, 10) : new Date(a.created_at).toISOString().slice(0, 10);
+      const answers = a.TEST_ATTEMPT?.[0]?.answers || {};
+      let parsedAnswers = answers;
+      if (typeof parsedAnswers === "string") {
+        try { parsedAnswers = JSON.parse(parsedAnswers); } catch (e) { }
+      }
+      return {
+        date: subDate,
+        testMarks: score,
+        addMarks: 0,
+        total: score,
+        grade: a.TEST_ATTEMPT?.[0]?.category || "A",
+        approvalStatus: a.status === "Pending" ? "Submitted" : a.status,
+        remarks: parsedAnswers?.remarks || a.APPROVAL?.remarks || "No remarks"
+      };
+    });
 
     return (
       <div className="pointsman-monitoring-detail-wrapper" style={{ animation: "fadeIn 0.3s ease-out" }}>
@@ -3735,8 +3738,8 @@ export function useAomState(user, onLogout) {
   const renderChartZoomModal = () => {
     if (!isChartZoomModalOpen) return null;
 
-    // Filter math logic on DASHBOARD_96_STATIONS
-    const filtered = DASHBOARD_96_STATIONS.filter(st => {
+    // Filter math logic on unifiedStations
+    const filtered = unifiedStations.filter(st => {
       const q = zoomPopupSearch.trim().toLowerCase();
       const matchesSearch = !q || st.stationName.toLowerCase().includes(q) || st.stationCode.toLowerCase().includes(q);
 
@@ -4318,29 +4321,33 @@ export function useAomState(user, onLogout) {
   const renderEmployeeManagement = () => {
     // 1. Dynamic Master Employee List Compilation
     const allEmployees = [
-      ...aomPointsmen.map(p => ({
-        hrmsId: p.hrmsId,
-        name: p.name,
-        gender: p.gender || "Male",
-        age: p.age || 35,
-        doj: p.doj,
-        basePay: p.basePay || "₹28,500",
-        designation: "Pointsman",
-        stationName: p.stationName,
-        stationCode: p.stationCode,
-        division: p.division || "Nagpur",
-        zone: p.zone || "CR",
-        category: p.cat || getPmCat(p.lastScore),
-        riskLevel: p.risk || getPmRisk(p),
-        assessmentStatus: p.approvalStatus,
-        lastScore: p.lastScore,
-        safetyScore: p.safetyScore,
-        totalAssessments: p.totalAssessments,
-        lastAssessedDate: p.lastAssessDate || p.lastAssessedDate || p.doj || "2026-03-28",
-        monitoringStatus: deactivatedUserIds.has(p.hrmsId) ? "Deactivated" : (p.monitoringStatus || "Active")
-      })),
+      ...aomPointsmen.map(p => {
+        const isUnassessed = p.approvalStatus === "Pending First Assessment" || p.status === "Pending First Assessment";
+        return {
+          hrmsId: p.hrmsId,
+          name: p.name,
+          gender: p.gender || "Male",
+          age: p.age || 35,
+          doj: p.doj,
+          basePay: p.basePay || "₹28,500",
+          designation: "Pointsman",
+          stationName: p.stationName,
+          stationCode: p.stationCode,
+          division: p.division || "Nagpur",
+          zone: p.zone || "CR",
+          category: p.cat || getPmCat(p.lastScore),
+          riskLevel: p.risk || getPmRisk(p),
+          assessmentStatus: p.approvalStatus,
+          lastScore: isUnassessed ? null : p.lastScore,
+          safetyScore: isUnassessed ? null : p.safetyScore,
+          totalAssessments: isUnassessed ? 0 : p.totalAssessments,
+          lastAssessedDate: isUnassessed ? "No Assessment Taken" : (p.lastAssessDate || p.lastAssessedDate || p.doj || "2026-03-28"),
+          monitoringStatus: deactivatedUserIds.has(p.hrmsId) ? "Deactivated" : (p.monitoringStatus || "Active")
+        };
+      }),
       ...stationMastersDirectory.map((sm, idx) => {
         const smHrmsId = sm.hrmsId || sm.id || `SM_${1001 + idx}`;
+        const isUnassessed = sm.approvalStatus === "Pending First Assessment" || sm.status === "Pending First Assessment";
         return {
           hrmsId: smHrmsId,
           name: sm.name,
@@ -4356,35 +4363,39 @@ export function useAomState(user, onLogout) {
           category: sm.cat || "A",
           riskLevel: sm.riskLevel || sm.risk || "Low",
           assessmentStatus: sm.approvalStatus || "Approved",
-          lastScore: sm.lastScore || sm.score || 85,
-          safetyScore: sm.safetyScore || 90,
-          totalAssessments: sm.totalAssessments || 10,
-          lastAssessedDate: sm.lastAssessedDate || sm.lastAssessDate || sm.doj || "2026-04-12",
+          lastScore: isUnassessed ? null : (sm.lastScore || sm.score || 0),
+          safetyScore: isUnassessed ? null : (sm.safetyScore || 0),
+          totalAssessments: isUnassessed ? 0 : (sm.totalAssessments || 0),
+          lastAssessedDate: isUnassessed ? "No Assessment Taken" : (sm.lastAssessedDate || sm.lastAssessDate || sm.doj || null),
           monitoringStatus: deactivatedUserIds.has(smHrmsId) ? "Deactivated" : (sm.monitoringStatus || "Active")
         };
       }),
-      ...trafficInspectors.map((ti, idx) => ({
-        hrmsId: ti.employeeId,
-        name: ti.name,
-        gender: "Male",
-        age: 48,
-        doj: "2006-11-20",
-        basePay: "₹68,000",
-        designation: "Traffic Inspector",
-        stationName: ti.stationName || ti.station || "Division HQ",
-        stationCode: ti.stationCode || "HQ",
-        division: ti.division || "Nagpur",
-        zone: ti.zone || "CR",
-        category: ti.cat || ti.category || "Senior TI",
-        riskLevel: ti.risk || ti.riskLevel || "Low",
-        assessmentStatus: ti.status || ti.approvalStatus || "Approved",
-        lastScore: ti.lastScore || ti.score || 88,
-        safetyScore: 95,
-        totalAssessments: 8,
-        lastAssessedDate: ti.lastDate || ti.doj || "2026-03-15",
-        monitoringStatus: deactivatedUserIds.has(ti.employeeId) ? "Deactivated" : (ti.monitoringStatus || "Active")
-      }))
+      ...trafficInspectors.map((ti, idx) => {
+        const isUnassessed = ti.status === "Pending First Assessment" || ti.approvalStatus === "Pending First Assessment";
+        return {
+          hrmsId: ti.employeeId,
+          name: ti.name,
+          gender: "Male",
+          age: 48,
+          doj: "2006-11-20",
+          basePay: "₹68,000",
+          designation: "Traffic Inspector",
+          stationName: ti.stationName || ti.station || "Division HQ",
+          stationCode: ti.stationCode || "HQ",
+          division: ti.division || "Nagpur",
+          zone: ti.zone || "CR",
+          category: ti.cat || ti.category || "A",
+          riskLevel: ti.risk || ti.riskLevel || "Low",
+          assessmentStatus: ti.status || ti.approvalStatus || "Approved",
+          lastScore: isUnassessed ? null : (ti.lastScore || ti.score || 88),
+          safetyScore: isUnassessed ? null : 95,
+          totalAssessments: isUnassessed ? 0 : (ti.totalAssessments || 8),
+          lastAssessedDate: isUnassessed ? "No Assessment Taken" : (ti.lastDate || ti.doj || "2026-03-15"),
+          monitoringStatus: deactivatedUserIds.has(ti.employeeId) ? "Deactivated" : (ti.monitoringStatus || "Active")
+        };
+      })
     ];
+
 
     // Unique filter options computed dynamically
     const uniqueDesignations = ["All", "Pointsman", "Station Master", "Traffic Inspector"];
@@ -5059,7 +5070,52 @@ export function useAomState(user, onLogout) {
     // If a profile detail is being viewed
     if (selectedRoleEmployee && selectedRoleEmployee._roleKey === roleKey) {
       const s = selectedRoleEmployee;
-      const scoreData = MONTHLY_TREND.map((m, i) => ({ month: m.month, score: Math.max(50, (s.lastScore || 80) - 10 + i * 2) }));
+
+      // Real-time calculation of assessment history for this Pointsman
+      const myAssessments = (allDbAssessments || []).filter(a => a.employee?.hrms_id === s.hrmsId);
+      const approvedAssessments = myAssessments.filter(a => ["Approved", "Completed", "EVALUATED"].includes(a.status));
+      const latestApproved = approvedAssessments.length > 0
+        ? [...approvedAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+        : null;
+
+      const latestScoreVal = latestApproved?.TEST_ATTEMPT?.[0]?.obtained_marks;
+      const lastAssessDateVal = latestApproved 
+        ? (latestApproved.assessment_date ? new Date(latestApproved.assessment_date).toISOString().slice(0, 10) : new Date(latestApproved.created_at).toISOString().slice(0, 10))
+        : null;
+
+      const displayScore = (latestScoreVal !== undefined && latestScoreVal !== null)
+        ? `${latestScoreVal}/100`
+        : (s.lastScore ? `${s.lastScore}/100` : "—");
+
+      const displayDate = lastAssessDateVal 
+        ? lastAssessDateVal 
+        : (s.lastAssessedDate && s.lastAssessedDate !== "No Assessment Taken" ? s.lastAssessedDate : "No Assessment Taken");
+
+      const formatMonthYear = (dateStr) => {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+      };
+
+      const pmAssessments = (allDbAssessments || [])
+        .filter(a => a.employee?.hrms_id === s.hrmsId && a.TEST_ATTEMPT?.[0]?.obtained_marks != null)
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+      let scoreData = [];
+      if (pmAssessments.length > 0) {
+        scoreData = pmAssessments.map(a => ({
+          month: formatMonthYear(a.assessment_date || a.created_at),
+          score: a.TEST_ATTEMPT[0].obtained_marks,
+          date: (a.assessment_date || a.created_at ? new Date(a.assessment_date || a.created_at).toISOString().slice(0, 10) : "")
+        }));
+      } else {
+        const baseScore = s.lastScore;
+        if (baseScore) {
+          scoreData = MONTHLY_TREND.map((m, i) => ({ month: m.month, score: Math.max(50, baseScore - 10 + i * 2) }));
+        }
+      }
+
       const roleLabel = { pointsmen: "Pointsman", sm: "Station Master", ss: "Station Superintendent", tm: "Train Manager", ti: "Traffic Inspector" }[roleKey] || title;
       return (
         <div className="sdom-fade">
@@ -5080,11 +5136,11 @@ export function useAomState(user, onLogout) {
               </div>
             </div>
             <div className="sdom-station-header-stats">
-              <div className="sdom-station-header-stat"><span className="val">{s.category === "Untested" ? "Not Given Test" : (s.lastScore || "–")}</span><span className="lbl">Latest Score</span></div>
+              <div className="sdom-station-header-stat"><span className="val">{s.category === "Untested" ? "Not Given Test" : displayScore}</span><span className="lbl">Latest Score</span></div>
               <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
               <div className="sdom-station-header-stat"><span className="val">{s.contactNumber || "—"}</span><span className="lbl">Contact</span></div>
               <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
-              <div className="sdom-station-header-stat"><span className="val">{s.lastAssessedDate || "—"}</span><span className="lbl">Last Assessment</span></div>
+              <div className="sdom-station-header-stat"><span className="val">{displayDate}</span><span className="lbl">Last Assessment</span></div>
             </div>
           </div>
           <div className="sdom-row-2">
@@ -5142,16 +5198,22 @@ export function useAomState(user, onLogout) {
             <div className="sdom-chart-card">
               <div className="sdom-chart-title">Score Trend</div>
               <div className="sdom-chart-subtitle">Assessment score progression</div>
-              <div style={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={scoreData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" fontSize={11} />
-                    <YAxis domain={[40, 100]} fontSize={11} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div style={{ height: 300, display: "flex", flexDirection: "column", justifyContent: "center", width: "100%" }}>
+                {scoreData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={scoreData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="month" fontSize={11} />
+                      <YAxis domain={[0, 100]} fontSize={11} />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div style={{ textAlign: "center", color: "#64748b", fontSize: "0.95rem", fontStyle: "italic" }}>
+                    No Assessment Records Found
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -5547,22 +5609,25 @@ export function useAomState(user, onLogout) {
   };
 
   const unifiedStaff = useMemo(() => {
-    return allEmployees.map(u => ({
-      id: u.hrmsId,
-      name: u.name,
-      station: u.stationName,
-      role: u.role,
-      cat: u.category || "A",
-      risk: u.riskLevel || "Low",
-      score: u.lastScore || 80,
-      status: u.assessmentStatus || "Approved",
-      contact: u.contactNumber || "+91 99000 11000",
-      email: u.emailId || `${u.hrmsId?.toLowerCase()}@rail.in`,
-      lastDate: u.lastAssessedDate || "2026-03-10",
-      reportingAom: "P. K. Verma (Sr. DOM)",
-      jurisdiction: u.jurisdiction,
-      linkedStations: u.linkedStations
-    }));
+    return allEmployees.map(u => {
+      const isUnassessed = u.assessmentStatus === "Pending First Assessment";
+      return {
+        id: u.hrmsId,
+        name: u.name,
+        station: u.stationName,
+        role: u.role,
+        cat: u.category || "A",
+        risk: u.riskLevel || "Low",
+        score: isUnassessed ? null : (u.lastScore || 80),
+        status: u.assessmentStatus || "Approved",
+        contact: u.contactNumber || "+91 99000 11000",
+        email: u.emailId || `${u.hrmsId?.toLowerCase()}@rail.in`,
+        lastDate: isUnassessed ? "No Assessment Taken" : (u.lastAssessedDate || "2026-03-10"),
+        reportingAom: "P. K. Verma (Sr. DOM)",
+        jurisdiction: u.jurisdiction,
+        linkedStations: u.linkedStations
+      };
+    });
   }, [allEmployees]);
 
   const unifiedStations = useMemo(() => {
@@ -5583,9 +5648,11 @@ export function useAomState(user, onLogout) {
         smCount: smCount || st.smCount || 5,
         pmCount: pmCount || st.pmCount || 20,
         score: st.score || st.avgScore || 80,
+        avgScore: st.score || st.avgScore || 80,
         safety,
         highRisk: highRisk || st.highRisk || (st.riskLevel === "High" ? 4 : st.riskLevel === "Medium" ? 2 : 0),
         pending: st.pending || 0,
+        completed: Math.max(0, (pmCount || st.pmCount || 20) - (st.pending || 0)),
         stationName: stName,
         stationCode: stCode,
         division: st.division || "Nagpur",
@@ -5670,7 +5737,51 @@ export function useAomState(user, onLogout) {
   };
 
   function renderStaffDetail(s) {
-    const scoreData = MONTHLY_TREND.map((m, i) => ({ month: m.month, score: Math.max(50, s.score - 10 + i * 2) }));
+    // Real-time calculation of assessment history for this staff member
+    const myAssessments = (allDbAssessments || []).filter(a => a.employee?.hrms_id === s.id);
+    const approvedAssessments = myAssessments.filter(a => ["Approved", "Completed", "EVALUATED"].includes(a.status));
+    const latestApproved = approvedAssessments.length > 0
+      ? [...approvedAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+      : null;
+
+    const latestScoreVal = latestApproved?.TEST_ATTEMPT?.[0]?.obtained_marks;
+    const lastAssessDateVal = latestApproved 
+      ? (latestApproved.assessment_date ? new Date(latestApproved.assessment_date).toISOString().slice(0, 10) : new Date(latestApproved.created_at).toISOString().slice(0, 10))
+      : null;
+
+    const displayScore = (latestScoreVal !== undefined && latestScoreVal !== null)
+      ? `${latestScoreVal}/100`
+      : (s.score ? `${s.score}/100` : "—");
+
+    const displayDate = lastAssessDateVal 
+      ? lastAssessDateVal 
+      : (s.lastAssessDate || s.lastDate || "No Assessment Taken");
+
+    const formatMonthYear = (dateStr) => {
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+    };
+
+    const pmAssessments = myAssessments
+      .filter(a => a.TEST_ATTEMPT?.[0]?.obtained_marks != null)
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    let scoreData = [];
+    if (pmAssessments.length > 0) {
+      scoreData = pmAssessments.map(a => ({
+        month: formatMonthYear(a.assessment_date || a.created_at),
+        score: a.TEST_ATTEMPT[0].obtained_marks,
+        date: (a.assessment_date || a.created_at ? new Date(a.assessment_date || a.created_at).toISOString().slice(0, 10) : "")
+      }));
+    } else {
+      const baseScore = s.score;
+      if (baseScore) {
+        scoreData = MONTHLY_TREND.map((m, i) => ({ month: m.month, score: Math.max(50, baseScore - 10 + i * 2) }));
+      }
+    }
+
     return (
       <div className="sdom-fade">
         <div style={{ marginBottom: 24 }}>
@@ -5696,7 +5807,7 @@ export function useAomState(user, onLogout) {
           </div>
           <div className="sdom-station-header-stats">
             <div className="sdom-station-header-stat">
-              <span className="val">{s.score}</span>
+              <span className="val">{displayScore}</span>
               <span className="lbl">Latest Score</span>
             </div>
             <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
@@ -5706,7 +5817,7 @@ export function useAomState(user, onLogout) {
             </div>
             <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
             <div className="sdom-station-header-stat">
-              <span className="val">{s.lastDate || "—"}</span>
+              <span className="val">{displayDate}</span>
               <span className="lbl">Last Assessment</span>
             </div>
           </div>
@@ -5739,16 +5850,22 @@ export function useAomState(user, onLogout) {
           <div className="sdom-chart-card">
             <div className="sdom-chart-title">Score Trend</div>
             <div className="sdom-chart-subtitle">Monthly performance tracking for this employee</div>
-            <div style={{ height: 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={scoreData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" fontSize={11} />
-                  <YAxis domain={[40, 100]} fontSize={11} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
-                </LineChart>
-              </ResponsiveContainer>
+            <div style={{ height: 300, display: "flex", flexDirection: "column", justifyContent: "center", width: "100%" }}>
+              {scoreData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={scoreData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="month" fontSize={11} />
+                    <YAxis domain={[0, 100]} fontSize={11} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ textAlign: "center", color: "#64748b", fontSize: "0.95rem", fontStyle: "italic" }}>
+                  No Assessment Records Found
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -5811,35 +5928,38 @@ export function useAomState(user, onLogout) {
 
       setStations(st);
 
-      const mapped = u.map(x => ({
-        ...x,
-        hrmsId: x.id,
-        employeeId: x.id,
-        user_id: x.user_id,
-        name: x.name,
-        lastScore: x.score,
-        safetyScore: x.safetyScore || 85,
-        doj: x.lastDate,
-        stationName: x.station,
-        stationCode: st.find(s => s.name === x.station)?.code || "NGP",
-        approvalStatus: x.status,
-        monitoringStatus: "Active",
-        contactNumber: x.contact,
-        contact: x.contact,
-        emailId: x.email,
-        email: x.email,
-        pfNumber: x.pfNumber || "—",
-        designation: ROLE_MAP[x.role] || x.role,
-        role: x.role,
-        division: x.division,
-        zone: x.zone,
-        cat: x.cat,
-        risk: x.risk,
-        riskLevel: x.risk,
-        workLocation: x.workLocation,
-        reportingSm: x.reportingSm,
-        shift: x.shift
-      }));
+      const mapped = u.map(x => {
+        const isUntested = x.cat === "Untested";
+        return {
+          ...x,
+          hrmsId: x.id,
+          employeeId: x.id,
+          user_id: x.user_id,
+          name: x.name,
+          lastScore: isUntested ? null : x.score,
+          safetyScore: isUntested ? null : (x.safetyScore || 0),
+          doj: x.lastDate,
+          stationName: x.station,
+          stationCode: st.find(s => s.name === x.station)?.code || "NGP",
+          approvalStatus: isUntested ? "Pending" : x.status,
+          monitoringStatus: "Active",
+          contactNumber: x.contact,
+          contact: x.contact,
+          emailId: x.email,
+          email: x.email,
+          pfNumber: x.pfNumber || "—",
+          designation: ROLE_MAP[x.role] || x.role,
+          role: x.role,
+          division: x.division,
+          zone: x.zone,
+          cat: x.cat,
+          risk: x.risk,
+          riskLevel: x.risk,
+          workLocation: x.workLocation,
+          reportingSm: x.reportingSm,
+          shift: x.shift
+        };
+      });
 
       setAomPointsmen(mapped.filter(x => x.role === "pointsmen"));
       setAomStationMasters(mapped.filter(x => x.role === "sm"));
@@ -5881,6 +6001,51 @@ export function useAomState(user, onLogout) {
 
       if (!assessError && assessList) {
         setAllDbAssessments(assessList);
+
+        const updatedMapped = mapped.map(userObj => {
+          const userAssessments = assessList.filter(a => a.employee?.hrms_id === userObj.hrmsId);
+          const approvedAssessments = userAssessments.filter(a => a.status === 'Approved');
+          const totalApproved = approvedAssessments.length;
+
+          if (totalApproved > 0) {
+            const latestApproved = [...approvedAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            const score = latestApproved?.TEST_ATTEMPT?.[0]?.obtained_marks;
+            const cat = latestApproved?.TEST_ATTEMPT?.[0]?.category || userObj.cat || "A";
+            return {
+              ...userObj,
+              totalAssessments: userAssessments.length,
+              approvalStatus: "Approved",
+              status: "Approved",
+              cat: cat,
+              category: cat,
+              risk: cat === "D" ? "High" : (score >= 80 ? "Low" : score >= 60 ? "Medium" : "High"),
+              riskLevel: cat === "D" ? "High" : (score >= 80 ? "Low" : score >= 60 ? "Medium" : "High"),
+              score: score,
+              lastScore: score
+            };
+          } else {
+            const cat = userObj.cat || userObj.category || "A";
+            return {
+              ...userObj,
+              totalAssessments: userAssessments.length,
+              approvalStatus: "Pending First Assessment",
+              status: "Pending First Assessment",
+              cat: cat,
+              category: cat,
+              risk: cat === "D" ? "High" : cat === "C" ? "Medium" : "Low",
+              riskLevel: cat === "D" ? "High" : cat === "C" ? "Medium" : "Low",
+              score: null,
+              lastScore: null
+            };
+          }
+        });
+
+        setAomPointsmen(updatedMapped.filter(x => x.role === "pointsmen"));
+        setAomStationMasters(updatedMapped.filter(x => x.role === "sm"));
+        setAomSuperintendents(updatedMapped.filter(x => x.role === "ss"));
+        setAomTrainManagers(updatedMapped.filter(x => x.role === "tm"));
+        setTrafficInspectors(updatedMapped.filter(x => x.role === "ti"));
+        setUsers(updatedMapped);
         // Map SM assessments
         const sms = (assessList || []).filter(a => a.assessment_type === "Station Master Assessment");
         const smMapped = sms.map(a => {

@@ -138,6 +138,30 @@ export function StationMasterPointsmanModal(props) {
                     onChange={e => setPmModal(p => ({ ...p, data: { ...p.data, doj: e.target.value } }))}
                   />
                 </div>
+                <div className="sdom-modal-field">
+                  <label>{t("Safety Category *")}</label>
+                  <select
+                    value={pmModal.data.category || pmModal.data.cat || "Untested"}
+                    onChange={e => {
+                      const catVal = e.target.value;
+                      setPmModal(p => ({
+                        ...p,
+                        data: {
+                          ...p.data,
+                          category: catVal,
+                          cat: catVal
+                        }
+                      }));
+                    }}
+                    required
+                  >
+                    <option value="Untested">{t("Untested")}</option>
+                    <option value="A">{t("Category A")}</option>
+                    <option value="B">{t("Category B")}</option>
+                    <option value="C">{t("Category C")}</option>
+                    <option value="D">{t("Category D")}</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

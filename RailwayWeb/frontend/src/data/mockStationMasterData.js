@@ -302,68 +302,7 @@ export const smTestQuestions = [
 ];
 
 /* ─── SM SELF-ASSESSMENT HISTORY (done by TI) ─── */
-export const smAssessmentHistory = [
-  {
-    id: 1, date: "2026-03-25", period: "Q1 2026",
-    assessedBy: "TI_2001 — R. Khan",
-    totalScore: 86, category: "A", approvalStatus: "Approved",
-    tiRemarks: "Station demonstrates strong operational discipline and safety culture.",
-    sections: [
-      { title: "Knowledge of Rules (MCQ)",         marks: 22, outOf: 25 },
-      { title: "Alertness and Observation of Rules", marks: 22, outOf: 25 },
-      { title: "Safety Record",                     marks: 13, outOf: 15 },
-      { title: "Leadership and Management",         marks: 13, outOf: 15 },
-      { title: "Discipline",                        marks: 8, outOf: 10 },
-      { title: "Appearance and Neatness",           marks: 8, outOf: 10 }
-    ],
-    mcqResponses: [1, 2, 2, 2, 1, 1, 2, 2, 2, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 2, 0, 1, 1, 0, 0]
-  },
-  {
-    id: 2, date: "2025-12-18", period: "Q4 2025",
-    assessedBy: "TI_2001 — R. Khan",
-    totalScore: 79, category: "B", approvalStatus: "Approved",
-    tiRemarks: "Good performance. Minor gaps in documentation — addressed in training.",
-    sections: [
-      { title: "Knowledge of Rules (MCQ)",         marks: 20, outOf: 25 },
-      { title: "Alertness and Observation of Rules", marks: 20, outOf: 25 },
-      { title: "Safety Record",                     marks: 12, outOf: 15 },
-      { title: "Leadership and Management",         marks: 11, outOf: 15 },
-      { title: "Discipline",                        marks: 8, outOf: 10 },
-      { title: "Appearance and Neatness",           marks: 8, outOf: 10 }
-    ],
-    mcqResponses: [1, 2, 3, 2, 1, 1, 2, 2, 2, 1, 0, 0, 0, 2, 1, 0, 0, 2, 0, 2, 0, 1, 1, 1, 0]
-  },
-  {
-    id: 3, date: "2025-09-10", period: "Q3 2025",
-    assessedBy: "TI_2001 — R. Khan",
-    totalScore: 91, category: "A", approvalStatus: "Approved",
-    tiRemarks: "Excellent quarter. Exceptional handling of monsoon disruptions.",
-    sections: [
-      { title: "Knowledge of Rules (MCQ)",         marks: 23, outOf: 25 },
-      { title: "Alertness and Observation of Rules", marks: 23, outOf: 25 },
-      { title: "Safety Record",                     marks: 14, outOf: 15 },
-      { title: "Leadership and Management",         marks: 13, outOf: 15 },
-      { title: "Discipline",                        marks: 9, outOf: 10 },
-      { title: "Appearance and Neatness",           marks: 9, outOf: 10 }
-    ],
-    mcqResponses: [1, 2, 2, 2, 1, 1, 2, 2, 2, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 2, 0, 1, 1, 0, 0]
-  },
-  {
-    id: 4, date: "2025-06-14", period: "Q2 2025",
-    assessedBy: "TI_2001 — R. Khan",
-    totalScore: 74, category: "B", approvalStatus: "Approved",
-    tiRemarks: "Satisfactory. Focus needed on staff supervision logs.",
-    sections: [
-      { title: "Knowledge of Rules (MCQ)",         marks: 18, outOf: 25 },
-      { title: "Alertness and Observation of Rules", marks: 18, outOf: 25 },
-      { title: "Safety Record",                     marks: 11, outOf: 15 },
-      { title: "Leadership and Management",         marks: 11, outOf: 15 },
-      { title: "Discipline",                        marks: 8, outOf: 10 },
-      { title: "Appearance and Neatness",           marks: 8, outOf: 10 }
-    ],
-    mcqResponses: [1, 2, 3, 2, 1, 2, 2, 1, 2, 1, 0, 1, 0, 2, 1, 0, 0, 2, 0, 2, 1, 1, 1, 1, 0]
-  }
-];
+export const smAssessmentHistory = [];
 
 /* ─── SM SELF‑ASSESSMENT (done by TI) ─── */
 export const smSelfAssessment = {

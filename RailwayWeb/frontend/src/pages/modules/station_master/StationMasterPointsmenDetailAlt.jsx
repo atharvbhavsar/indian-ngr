@@ -9,17 +9,71 @@ export function StationMasterPointsmenDetailAlt(props) {
   const {
     s,
     setViewingPm,
-    smProfile
+    smProfile,
+    allDbAssessments
   } = props;
 
-  const trendScores = [
-    { month: "Dec 25", score: Math.max(50, (s.lastScore || s.score || 80) - 6) },
-    { month: "Jan 26", score: Math.max(50, (s.lastScore || s.score || 80) - 4) },
-    { month: "Feb 26", score: Math.max(50, (s.lastScore || s.score || 80) - 2) },
-    { month: "Mar 26", score: Math.max(50, (s.lastScore || s.score || 80) + 1) },
-    { month: "Apr 26", score: Math.max(50, (s.lastScore || s.score || 80) + 2) },
-    { month: "May 26", score: Math.max(50, (s.lastScore || s.score || 80)) },
-  ];
+  // Real-time calculation of assessment history for this Pointsman
+  const myAssessments = (allDbAssessments || []).filter(a => a.employee?.hrms_id === s.hrmsId);
+  const approvedAssessments = myAssessments.filter(a => ["Approved", "Completed", "EVALUATED"].includes(a.status));
+  const latestApproved = approvedAssessments.length > 0
+    ? [...approvedAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+    : null;
+
+  const latestScoreVal = latestApproved?.TEST_ATTEMPT?.[0]?.obtained_marks;
+  const lastAssessDateVal = latestApproved 
+    ? (latestApproved.assessment_date ? new Date(latestApproved.assessment_date).toISOString().slice(0, 10) : new Date(latestApproved.created_at).toISOString().slice(0, 10))
+    : null;
+
+  const displayScore = (latestScoreVal !== undefined && latestScoreVal !== null)
+    ? `${latestScoreVal}/100`
+    : (s.lastScore || s.score ? `${s.lastScore || s.score}/100` : "—");
+
+  const displayDate = lastAssessDateVal 
+    ? lastAssessDateVal 
+    : (s.lastAssessDate && s.lastAssessDate !== "No Assessment Taken" ? s.lastAssessDate : "No Assessment Taken");
+
+  const formatMonthYear = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+  };
+
+  const pmAssessments = (allDbAssessments || [])
+    .filter(a => a.employee?.hrms_id === s.hrmsId && a.TEST_ATTEMPT?.[0]?.obtained_marks != null)
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  let trendScores = [];
+  if (pmAssessments.length > 0) {
+    trendScores = pmAssessments.map(a => {
+      const scoreVal = a.TEST_ATTEMPT?.[0]?.obtained_marks || 0;
+      const dateStr = a.assessment_date || a.created_at;
+      return {
+        month: formatMonthYear(dateStr),
+        score: scoreVal,
+        date: dateStr ? new Date(dateStr).toISOString().slice(0, 10) : ""
+      };
+    });
+  } else {
+    // If they have no database assessments yet, we can check if they are untested.
+    // If untested, trendScores should be empty so we show "No assessment history".
+    // Otherwise, we can fall back to the mock progression for visual consistency if they have a mock score.
+    const baseScore = s.lastScore || s.score;
+    if (baseScore) {
+      trendScores = [
+        { month: "Dec 25", score: Math.max(50, baseScore - 6) },
+        { month: "Jan 26", score: Math.max(50, baseScore - 4) },
+        { month: "Feb 26", score: Math.max(50, baseScore - 2) },
+        { month: "Mar 26", score: Math.max(50, baseScore + 1) },
+        { month: "Apr 26", score: Math.max(50, baseScore + 2) },
+        { month: "May 26", score: Math.max(50, baseScore) },
+      ];
+    } else {
+      trendScores = [];
+    }
+  }
+
   const catMap = { A: "sdom-badge-success", B: "sdom-badge-info", C: "sdom-badge-warning", D: "sdom-badge-danger" };
   const pmRisk = riskLevel(s);
   const riskMap = { Low: "sdom-badge-success", Medium: "sdom-badge-warning", High: "sdom-badge-danger" };
@@ -47,7 +101,7 @@ export function StationMasterPointsmenDetailAlt(props) {
         </div>
         <div className="sdom-station-header-stats">
           <div className="sdom-station-header-stat">
-            <span className="val">{(s.lastScore || s.score) ? `${s.lastScore || s.score}/100` : "—"}</span>
+            <span className="val">{displayScore}</span>
             <span className="lbl">{t("Latest Score")}</span>
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
@@ -57,7 +111,7 @@ export function StationMasterPointsmenDetailAlt(props) {
           </div>
           <div style={{ width: 1, height: 60, background: "rgba(255,255,255,0.15)" }} />
           <div className="sdom-station-header-stat">
-            <span className="val">{s.lastAssessDate || s.lastDate || "—"}</span>
+            <span className="val">{displayDate}</span>
             <span className="lbl">{t("Last Assessment")}</span>
           </div>
         </div>
@@ -104,16 +158,22 @@ export function StationMasterPointsmenDetailAlt(props) {
         <div className="sdom-chart-card">
           <div className="sdom-chart-title">{t("Score Trend")}</div>
           <div className="sdom-chart-subtitle">{t("Assessment score progression")}</div>
-          <div style={{ height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendScores}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" fontSize={11} />
-                <YAxis domain={[40, 100]} fontSize={11} />
-                <Tooltip />
-                <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
-              </LineChart>
-            </ResponsiveContainer>
+          <div style={{ height: 300, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            {trendScores.length === 0 ? (
+              <div style={{ textAlign: "center", color: "#64748b", fontSize: "0.95rem", fontStyle: "italic" }}>
+                {t("No assessment history available")}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trendScores}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" fontSize={11} />
+                  <YAxis domain={[0, 100]} fontSize={11} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>

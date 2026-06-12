@@ -150,6 +150,21 @@ export default function UserManagement(props) {
                       </select>
                       {formErrors.zone && <span className="error-text">{formErrors.zone}</span>}
                     </div>
+
+                    <div className="form-group">
+                      <label>Safety Category *</label>
+                      <select
+                        name="category"
+                        value={userFormData.category || "Untested"}
+                        onChange={handleUserFormChange}
+                      >
+                        <option value="Untested">Untested</option>
+                        <option value="A">Category A</option>
+                        <option value="B">Category B</option>
+                        <option value="C">Category C</option>
+                        <option value="D">Category D</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="add-user-col">

@@ -245,6 +245,18 @@ function StationSuperintendentModule({ user, onLogout }) {
 
   const fullName = loggedInUserRecord?.name || (user?.name && user.name !== "Station Superintendent User" ? user.name : stationSuperintendentProfile.name);
 
+  // Clear any stale cached history from sessionStorage (may contain old mock/seed data)
+  useEffect(() => {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && k.startsWith("ss_history_")) keysToRemove.push(k);
+      }
+      keysToRemove.forEach(k => sessionStorage.removeItem(k));
+    } catch(e) { /* ignore */ }
+  }, []);
+
   const [activeNav, setActiveNav] = useState("dashboard");
 
   const [stations, setStations] = useState([]);
@@ -261,20 +273,77 @@ function StationSuperintendentModule({ user, onLogout }) {
         else if (x.role === "tm") fullRole = "Train Manager";
         else if (x.role === "ti") fullRole = "Traffic Inspector";
 
+        const isUntested = x.cat === "Untested";
+
         return {
           ...x,
           role: fullRole,
           hrmsId: x.id,
-          cat: x.category || "Untested",
-          risk: x.riskLevel || "Low",
-          score: parseInt(x.score) || 0,
-          safetyScore: parseInt(x.safetyScore) || 0,
-          totalAssessments: x.totalAssessments || 0,
-          approvalStatus: x.approvalStatus || "Approved",
+          cat: x.cat || "Untested",
+          risk: x.risk || "Untested",
+          score: isUntested ? null : (parseInt(x.score) || 0),
+          safetyScore: isUntested ? null : (parseInt(x.safetyScore) || 0),
+          totalAssessments: isUntested ? 0 : (x.totalAssessments || 0),
+          approvalStatus: isUntested ? "Pending" : (x.status || "Approved"),
           stationName: x.station || "—",
-          doj: x.joiningDate || "—"
+          doj: x.lastDate || "—"
         };
       });
+
+      if (isSupabaseConfigured) {
+        try {
+          const { data: assessList } = await supabase
+            .from("ASSESSMENT")
+            .select(`
+              *,
+              employee:USERS!employee_id (hrms_id),
+              TEST_ATTEMPT (obtained_marks, total_marks, category)
+            `);
+
+          if (assessList) {
+            const updatedMapped = mapped.map(userObj => {
+              const userAssessments = assessList.filter(a => a.employee?.hrms_id === userObj.hrmsId);
+              const approvedAssessments = userAssessments.filter(a => a.status === 'Approved');
+              const totalApproved = approvedAssessments.length;
+
+              if (totalApproved > 0) {
+                const latestApproved = [...approvedAssessments].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+                const score = latestApproved?.TEST_ATTEMPT?.[0]?.obtained_marks;
+                const cat = latestApproved?.TEST_ATTEMPT?.[0]?.category || userObj.cat || "A";
+                return {
+                  ...userObj,
+                  totalAssessments: userAssessments.length,
+                  approvalStatus: "Approved",
+                  status: "Approved",
+                  cat: cat,
+                  category: cat,
+                  risk: cat === "D" ? "High" : (score >= 80 ? "Low" : score >= 60 ? "Medium" : "High"),
+                  score: score,
+                  lastScore: score
+                };
+              } else {
+                const cat = userObj.cat || userObj.category || "A";
+                return {
+                  ...userObj,
+                  totalAssessments: userAssessments.length,
+                  approvalStatus: "Pending First Assessment",
+                  status: "Pending First Assessment",
+                  cat: cat,
+                  category: cat,
+                  risk: cat === "D" ? "High" : cat === "C" ? "Medium" : "Low",
+                  score: null,
+                  lastScore: null
+                };
+              }
+            });
+            setUsers(updatedMapped);
+            return;
+          }
+        } catch (dbErr) {
+          console.error("Failed to query assessments in SS module:", dbErr);
+        }
+      }
+
       setUsers(mapped);
     } catch (err) {
       console.error("Error fetching live db data:", err);
@@ -793,7 +862,16 @@ function StationSuperintendentModule({ user, onLogout }) {
       return;
     }
 
-    const payload = { ...newUserData, hrmsId: finalId };
+    const catVal = newUserData.category || "Untested";
+
+    const payload = {
+      ...newUserData,
+      hrmsId: finalId,
+      category: catVal,
+      cat: catVal,
+      score: 0,
+      safetyScore: 0
+    };
     const res = await saDataService.saveUser(payload, "add");
     if (res && res.success) {
       await fetchLiveDatabaseData();
@@ -811,6 +889,8 @@ function StationSuperintendentModule({ user, onLogout }) {
 
   const saveEditedUser = async (e) => {
     e.preventDefault();
+    const catVal = editingUser.category || editingUser.cat || "Untested";
+
     const payload = {
       hrmsId: editingUser.hrmsId || editingUser.id,
       name: editingUser.name,
@@ -822,7 +902,9 @@ function StationSuperintendentModule({ user, onLogout }) {
       designation: editingUser.designation,
       joiningDate: editingUser.joiningDate,
       pmeStatus: editingUser.pmeStatus,
-      refStatus: editingUser.refStatus
+      refStatus: editingUser.refStatus,
+      category: catVal,
+      cat: catVal
     };
     
     const res = await saDataService.saveUser(payload, "edit");

@@ -137,6 +137,30 @@ export function SAStaffModal({ modal, setModal, stations, staff, saveModal }) {
                     </select>
                   </div>
                 )}
+                <div className="sdom-modal-field">
+                  <label>Safety Category *</label>
+                  <select
+                    value={modal.data.category || modal.data.cat || "Untested"}
+                    onChange={e => {
+                      const catVal = e.target.value;
+                      setModal(p => ({
+                        ...p,
+                        data: {
+                          ...p.data,
+                          category: catVal,
+                          cat: catVal
+                        }
+                      }));
+                    }}
+                    required
+                  >
+                    <option value="Untested">Untested</option>
+                    <option value="A">Category A</option>
+                    <option value="B">Category B</option>
+                    <option value="C">Category C</option>
+                    <option value="D">Category D</option>
+                  </select>
+                </div>
               </div>
             </div>
 

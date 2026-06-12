@@ -36,14 +36,6 @@ export function StationMasterPointsmanDetail(props) {
   const computedCategory = latestApproved?.category || (score ? getCat(score) : null);
   const category = smProfile.cat && smProfile.cat !== "Untested" ? smProfile.cat : (smProfile.category && smProfile.category !== "Untested" ? smProfile.category : (computedCategory || "Untested"));
 
-  // If score is 0/falsy but we have a valid category, fall back to a reasonable score matching the category
-  if (!score && category !== "Untested") {
-    if (category === "A") score = 85;
-    else if (category === "B") score = 70;
-    else if (category === "C") score = 55;
-    else if (category === "D") score = 40;
-  }
-
   const computedRisk = riskLevel({ ...smProfile, cat: category, score: score });
   const risk = smProfile.risk && smProfile.risk !== "Untested" ? smProfile.risk : (smProfile.riskLevel && smProfile.riskLevel !== "Untested" ? smProfile.riskLevel : (computedRisk || "Untested"));
 

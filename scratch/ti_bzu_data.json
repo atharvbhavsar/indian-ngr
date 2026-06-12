@@ -1,0 +1,1262 @@
+[
+  {
+    "station": "KRTH",
+    "name": "ANUJ GUPTA",
+    "designation": "Pointsman",
+    "pf_no": "429808290",
+    "hrms_id": "SHIRYS",
+    "mobile_no": "7415057788",
+    "grade": "B"
+  },
+  {
+    "station": "KRTH",
+    "name": "GOURAV KUMAR SUNANIYA",
+    "designation": "Pointsman",
+    "pf_no": "429808268",
+    "hrms_id": "ROYAHJ",
+    "mobile_no": "7804961326",
+    "grade": "B"
+  },
+  {
+    "station": "KRTH",
+    "name": "JAL SINGH JATAV",
+    "designation": "Station Master",
+    "pf_no": "414860435",
+    "hrms_id": "RMPUUF",
+    "mobile_no": "9694151540",
+    "grade": "B"
+  },
+  {
+    "station": "KRTH",
+    "name": "KRISHNA KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "429808327",
+    "hrms_id": "KDZYPR",
+    "mobile_no": "6205889204",
+    "grade": "B"
+  },
+  {
+    "station": "KRTH",
+    "name": "LAV KUSH AJIT",
+    "designation": "Station Master",
+    "pf_no": "474807511",
+    "hrms_id": "XDRLGY",
+    "mobile_no": "9302084394",
+    "grade": "A"
+  },
+  {
+    "station": "KRTH",
+    "name": "PANKAJ KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "474810261",
+    "hrms_id": "NDTLKO",
+    "mobile_no": "7667934395",
+    "grade": "B"
+  },
+  {
+    "station": "KRTH",
+    "name": "PANKAJ KUMAR RAI",
+    "designation": "Pointsman",
+    "pf_no": "429805207",
+    "hrms_id": "MROAOP",
+    "mobile_no": "8340312105",
+    "grade": "B"
+  },
+  {
+    "station": "KRTH",
+    "name": "SUDHIR TIWARI",
+    "designation": "Station Master",
+    "pf_no": "400869288",
+    "hrms_id": "OUFNSF",
+    "mobile_no": "9425042805",
+    "grade": "A"
+  },
+  {
+    "station": "KSLA",
+    "name": "Mithun Kumar thakur",
+    "designation": "Pointsman",
+    "pf_no": "29808607",
+    "hrms_id": "YDYMLI",
+    "mobile_no": "8271367479",
+    "grade": "B"
+  },
+  {
+    "station": "KSLA",
+    "name": "PRAKASH",
+    "designation": "Pointsman",
+    "pf_no": "5429804979",
+    "hrms_id": "DBYRLH",
+    "mobile_no": "7722870806",
+    "grade": "B"
+  },
+  {
+    "station": "KSLA",
+    "name": "RAJESH KUMAR",
+    "designation": "Station Master",
+    "pf_no": "10763272",
+    "hrms_id": "GOAABM",
+    "mobile_no": "9308054121",
+    "grade": "A"
+  },
+  {
+    "station": "KSLA",
+    "name": "RAJKUMAR JADHAV",
+    "designation": "Pointsman",
+    "pf_no": "29805589",
+    "hrms_id": "MIYUZI",
+    "mobile_no": "9545278427",
+    "grade": "C"
+  },
+  {
+    "station": "KSLA",
+    "name": "RAVINDRA DESHMUKH",
+    "designation": "Station Master",
+    "pf_no": "74812051",
+    "hrms_id": "OLZGYM",
+    "mobile_no": "9098514081",
+    "grade": "B"
+  },
+  {
+    "station": "KSLA",
+    "name": "SATYAM GUPTA",
+    "designation": "Pointsman",
+    "pf_no": "29804979",
+    "hrms_id": "YKSYUK",
+    "mobile_no": "8009333930",
+    "grade": "B"
+  },
+  {
+    "station": "KSLA",
+    "name": "Satyjeet kumar",
+    "designation": "Station Master",
+    "pf_no": "29805259",
+    "hrms_id": "XJREHP",
+    "mobile_no": "7870018518",
+    "grade": "B"
+  },
+  {
+    "station": "TAKU",
+    "name": "G. N. JHA",
+    "designation": "Station Master",
+    "pf_no": "407443020",
+    "hrms_id": "ZMAKSN",
+    "mobile_no": "9893197467",
+    "grade": "A"
+  },
+  {
+    "station": "TAKU",
+    "name": "KARTIK",
+    "designation": "Pointsman",
+    "pf_no": "6529806845",
+    "hrms_id": "QOSNCC",
+    "mobile_no": "7000558585",
+    "grade": "B"
+  },
+  {
+    "station": "TAKU",
+    "name": "PRASHANT PAWAR",
+    "designation": "Pointsman",
+    "pf_no": "429806804",
+    "hrms_id": "SFESLW",
+    "mobile_no": "8889056194",
+    "grade": "B"
+  },
+  {
+    "station": "TAKU",
+    "name": "Rajesh prajapat",
+    "designation": "Pointsman",
+    "pf_no": "429808317",
+    "hrms_id": "CEQGFD",
+    "mobile_no": "8459312938",
+    "grade": "B"
+  },
+  {
+    "station": "TAKU",
+    "name": "RISHU PRAKASH",
+    "designation": "Station Master",
+    "pf_no": "429808660",
+    "hrms_id": "QLNXBB",
+    "mobile_no": "6204126785",
+    "grade": "B"
+  },
+  {
+    "station": "TAKU",
+    "name": "SANTOSH KUMAR",
+    "designation": "Station Master",
+    "pf_no": "410763661",
+    "hrms_id": "AIQWCW",
+    "mobile_no": "7739012353",
+    "grade": "B"
+  },
+  {
+    "station": "TAKU",
+    "name": "SR CHAUDHARY",
+    "designation": "Station Master",
+    "pf_no": "474809441",
+    "hrms_id": "IYCESK",
+    "mobile_no": "7218198995",
+    "grade": "B"
+  },
+  {
+    "station": "TAKU",
+    "name": "YOGESH KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "474800553",
+    "hrms_id": "QZTMNZ",
+    "mobile_no": "9399832961",
+    "grade": "C"
+  },
+  {
+    "station": "SALI",
+    "name": "HIRALAL MEENA",
+    "designation": "Pointsman",
+    "pf_no": "410808188",
+    "hrms_id": "AQJTIS",
+    "mobile_no": "9785687256",
+    "grade": "B"
+  },
+  {
+    "station": "SALI",
+    "name": "PRABHAT MALVI",
+    "designation": "Pointsman",
+    "pf_no": "45329806800",
+    "hrms_id": "KNJIYO",
+    "mobile_no": "7566108607",
+    "grade": "B"
+  },
+  {
+    "station": "SALI",
+    "name": "RAGWENDRA TOMAR",
+    "designation": "Station Master",
+    "pf_no": "39229804680",
+    "hrms_id": "YMOANK",
+    "mobile_no": "9584918379",
+    "grade": "B"
+  },
+  {
+    "station": "SALI",
+    "name": "Sandeep SINHA",
+    "designation": "Station Master",
+    "pf_no": "410763430",
+    "hrms_id": "MUMLFB",
+    "mobile_no": "9644893464",
+    "grade": "A"
+  },
+  {
+    "station": "SALI",
+    "name": "SANJEEV DUBEY",
+    "designation": "Station Master",
+    "pf_no": "410763673",
+    "hrms_id": "AZGCYE",
+    "mobile_no": "9415510590",
+    "grade": "A"
+  },
+  {
+    "station": "SALI",
+    "name": "SATYPRIY KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "429805265",
+    "hrms_id": "RFIQEI",
+    "mobile_no": "9758422729",
+    "grade": "B"
+  },
+  {
+    "station": "SALI",
+    "name": "Umesh gohiya",
+    "designation": "Station Master",
+    "pf_no": "10764033",
+    "hrms_id": "UBSWYO",
+    "mobile_no": "9691499711",
+    "grade": "B"
+  },
+  {
+    "station": "KQE",
+    "name": "DHARMENDRA TIWARI",
+    "designation": "Pointsman",
+    "pf_no": "429803430",
+    "hrms_id": "JDZLBB",
+    "mobile_no": "8827661663",
+    "grade": "B"
+  },
+  {
+    "station": "KQE",
+    "name": "HEMRAJ MEENA",
+    "designation": "Station Master",
+    "pf_no": "429808653",
+    "hrms_id": "GFNJEA",
+    "mobile_no": "9694812985",
+    "grade": "B"
+  },
+  {
+    "station": "KQE",
+    "name": "JITENDRA KUMAR NANGLOT",
+    "designation": "Pointsman",
+    "pf_no": "429808822",
+    "hrms_id": "AAEIOP",
+    "mobile_no": "9785483930",
+    "grade": "B"
+  },
+  {
+    "station": "KQE",
+    "name": "RAVI KUMAR",
+    "designation": "Station Master",
+    "pf_no": "429808742",
+    "hrms_id": "EWKWOX",
+    "mobile_no": "9199745307",
+    "grade": "B"
+  },
+  {
+    "station": "KQE",
+    "name": "S N TIWARI",
+    "designation": "Station Master",
+    "pf_no": "407422659",
+    "hrms_id": "FWGBCO",
+    "mobile_no": "9373012998",
+    "grade": "A"
+  },
+  {
+    "station": "KQE",
+    "name": "SHIVPRASHAD KAPSE",
+    "designation": "Pointsman",
+    "pf_no": "410762024",
+    "hrms_id": "PYZPZK",
+    "mobile_no": "9584408358",
+    "grade": "B"
+  },
+  {
+    "station": "KQE",
+    "name": "SUBHASH KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "429808947",
+    "hrms_id": "GSTEFZ",
+    "mobile_no": "7643908991",
+    "grade": "B"
+  },
+  {
+    "station": "KQE",
+    "name": "VINAY KUMAR SINGH",
+    "designation": "Station Master",
+    "pf_no": "474810248",
+    "hrms_id": "MPNTEI",
+    "mobile_no": "7999504494",
+    "grade": "B"
+  },
+  {
+    "station": "POX",
+    "name": "AKASH PANTHI",
+    "designation": "Station Master",
+    "pf_no": "429801658",
+    "hrms_id": "SMFTCM",
+    "mobile_no": "7999645855",
+    "grade": "A"
+  },
+  {
+    "station": "POX",
+    "name": "ANIKET YADAV",
+    "designation": "Pointsman",
+    "pf_no": "429808954",
+    "hrms_id": "ZRSPFW",
+    "mobile_no": "8717957495",
+    "grade": "B"
+  },
+  {
+    "station": "POX",
+    "name": "MOHD ABID",
+    "designation": "Station Master",
+    "pf_no": "410763314",
+    "hrms_id": "CKTWZU",
+    "mobile_no": "9340057621",
+    "grade": "A"
+  },
+  {
+    "station": "POX",
+    "name": "PRADEEP CHOUKIKAR",
+    "designation": "Station Master",
+    "pf_no": "39213AB0575",
+    "hrms_id": "ARKKED",
+    "mobile_no": "9131161843",
+    "grade": "B"
+  },
+  {
+    "station": "POX",
+    "name": "PRASHANT MISHRA",
+    "designation": "Pointsman",
+    "pf_no": "429808325",
+    "hrms_id": "UGXTSL",
+    "mobile_no": "9472887491",
+    "grade": "A"
+  },
+  {
+    "station": "POX",
+    "name": "RAKESH KUMAR SAFI",
+    "designation": "Station Master",
+    "pf_no": "474809532",
+    "hrms_id": "RFETLA",
+    "mobile_no": "6260474585",
+    "grade": "B"
+  },
+  {
+    "station": "POX",
+    "name": "SURESH KUMAR SHRIVASTAV",
+    "designation": "Station Master",
+    "pf_no": "474804870",
+    "hrms_id": "RMHXWE",
+    "mobile_no": "9131936472",
+    "grade": "B"
+  },
+  {
+    "station": "POX",
+    "name": "VAJINDRA SINGH",
+    "designation": "Pointsman",
+    "pf_no": "410806969",
+    "hrms_id": "ZHEHBB",
+    "mobile_no": "7015140472",
+    "grade": "B"
+  },
+  {
+    "station": "POX",
+    "name": "VIKASH SINGH",
+    "designation": "Pointsman",
+    "pf_no": "429808219",
+    "hrms_id": "NHPKWT",
+    "mobile_no": "6386965473",
+    "grade": "A"
+  },
+  {
+    "station": "POX",
+    "name": "Vineet kumar",
+    "designation": "Pointsman",
+    "pf_no": "429808945",
+    "hrms_id": "USTRXW",
+    "mobile_no": "6230343082",
+    "grade": "B"
+  },
+  {
+    "station": "DOH",
+    "name": "DHANRAJ GULAB",
+    "designation": "Pointsman",
+    "pf_no": "429804761",
+    "hrms_id": "IJBUAH",
+    "mobile_no": "9340208464",
+    "grade": "C"
+  },
+  {
+    "station": "DOH",
+    "name": "GOKUL YADAV",
+    "designation": "Pointsman",
+    "pf_no": "474806440",
+    "hrms_id": "WIJUPX",
+    "mobile_no": "9753972758",
+    "grade": "B"
+  },
+  {
+    "station": "DOH",
+    "name": "MATENDRA PRAKASH SINGH",
+    "designation": "Pointsman",
+    "pf_no": "4298807199",
+    "hrms_id": "JBJLSZ",
+    "mobile_no": "7870839049",
+    "grade": "B"
+  },
+  {
+    "station": "DOH",
+    "name": "MUKESH MALVIYA",
+    "designation": "Station Master",
+    "pf_no": "474807780",
+    "hrms_id": "BHCUOW",
+    "mobile_no": "8120168089",
+    "grade": "B"
+  },
+  {
+    "station": "DOH",
+    "name": "OMKAR PRASAD BADKUR",
+    "designation": "Station Master",
+    "pf_no": "410761342",
+    "hrms_id": "EDUURP",
+    "mobile_no": "9340759774",
+    "grade": "B"
+  },
+  {
+    "station": "DOH",
+    "name": "RATNESH KUMAR",
+    "designation": "Station Master",
+    "pf_no": "474809696",
+    "hrms_id": "HCIYUB",
+    "mobile_no": "8871005547",
+    "grade": "B"
+  },
+  {
+    "station": "DOH",
+    "name": "SHRAWAN MATHANKAR",
+    "designation": "Pointsman",
+    "pf_no": "474800012",
+    "hrms_id": "LOPFLJ",
+    "mobile_no": "7828579414",
+    "grade": "B"
+  },
+  {
+    "station": "DOH",
+    "name": "Mohan lal meena",
+    "designation": "Station Master",
+    "pf_no": "403191205",
+    "hrms_id": "UFDKEM",
+    "mobile_no": "9753991022",
+    "grade": "A"
+  },
+  {
+    "station": "MGRD",
+    "name": "MAMTA GADRE",
+    "designation": "Pointsman",
+    "pf_no": "429806988",
+    "hrms_id": "XQKLGT",
+    "mobile_no": "6262542793",
+    "grade": "B"
+  },
+  {
+    "station": "MGRD",
+    "name": "PRADEEP YADAV",
+    "designation": "Pointsman",
+    "pf_no": "429805375",
+    "hrms_id": "SZZUKU",
+    "mobile_no": "8435901040",
+    "grade": "A"
+  },
+  {
+    "station": "MGRD",
+    "name": "RAM SINGH SONPURRE",
+    "designation": "Station Master",
+    "pf_no": "474812348",
+    "hrms_id": "GREAHA",
+    "mobile_no": "9630772639",
+    "grade": "B"
+  },
+  {
+    "station": "MGRD",
+    "name": "RANJEET PRASAD",
+    "designation": "Station Master",
+    "pf_no": "474807857",
+    "hrms_id": "HCWZEZ",
+    "mobile_no": "9766948965",
+    "grade": "B"
+  },
+  {
+    "station": "MGRD",
+    "name": "REETIKA MALVI",
+    "designation": "Pointsman",
+    "pf_no": "45316237572",
+    "hrms_id": "ASRMLD",
+    "mobile_no": "8602407947",
+    "grade": "A"
+  },
+  {
+    "station": "BBTR",
+    "name": "A. K. SINGH",
+    "designation": "Station Master",
+    "pf_no": "429804581",
+    "hrms_id": "KMBGFY",
+    "mobile_no": "9523065655",
+    "grade": "B"
+  },
+  {
+    "station": "BBTR",
+    "name": "A. k. YADAV",
+    "designation": "Station Master",
+    "pf_no": "474807742",
+    "hrms_id": "FJBEME",
+    "mobile_no": "7089210070",
+    "grade": "A"
+  },
+  {
+    "station": "BBTR",
+    "name": "BIPIN KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "410764069",
+    "hrms_id": "ZXHOJO",
+    "mobile_no": "9534715629",
+    "grade": "B"
+  },
+  {
+    "station": "BBTR",
+    "name": "DUSHYANT PATEL",
+    "designation": "Station Master",
+    "pf_no": "429804581",
+    "hrms_id": "CNPUSS",
+    "mobile_no": "9755659595",
+    "grade": "B"
+  },
+  {
+    "station": "BBTR",
+    "name": "HEMLATA",
+    "designation": "Pointsman",
+    "pf_no": "410761184",
+    "hrms_id": "YMLUPM",
+    "mobile_no": "7587959980",
+    "grade": "B"
+  },
+  {
+    "station": "BBTR",
+    "name": "JASVANT SINGH",
+    "designation": "Pointsman",
+    "pf_no": "429805167",
+    "hrms_id": "MJONIX",
+    "mobile_no": "8433237572",
+    "grade": "A"
+  },
+  {
+    "station": "BBTR",
+    "name": "MEETHUN KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "429804414",
+    "hrms_id": "FQPFSU",
+    "mobile_no": "9534915779",
+    "grade": "B"
+  },
+  {
+    "station": "BBTR",
+    "name": "S. K. SONI",
+    "designation": "Station Master",
+    "pf_no": "400734494",
+    "hrms_id": "XSXUSO",
+    "mobile_no": "9826321320",
+    "grade": "B"
+  },
+  {
+    "station": "BBTR",
+    "name": "SANDEEP",
+    "designation": "Pointsman",
+    "pf_no": "474809234",
+    "hrms_id": "WYYUDU",
+    "mobile_no": "9179772190",
+    "grade": "B"
+  },
+  {
+    "station": "BBTR",
+    "name": "Vikash kumar",
+    "designation": "Pointsman",
+    "pf_no": "429808286",
+    "hrms_id": "OXUEBQ",
+    "mobile_no": "7250460213",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "A. K. SHRIVASTAV",
+    "designation": "Station Master",
+    "pf_no": "474803621",
+    "hrms_id": "MHNXCT",
+    "mobile_no": "9981757323",
+    "grade": "A"
+  },
+  {
+    "station": "GDYA",
+    "name": "Ankit Kumar Sharma",
+    "designation": "Pointsman",
+    "pf_no": "429807203",
+    "hrms_id": "IPXPRE",
+    "mobile_no": "8319547148",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "ANUJ DAS",
+    "designation": "Pointsman",
+    "pf_no": "474810273",
+    "hrms_id": "ZDTANL",
+    "mobile_no": "8463033442",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "ARBIND KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "429805236",
+    "hrms_id": "RKSSMW",
+    "mobile_no": "8789058208",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "DEVKANT",
+    "designation": "Pointsman",
+    "pf_no": "429805261",
+    "hrms_id": "FWKFDM",
+    "mobile_no": "8115577930",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "DHARMENDRA KUMAR",
+    "designation": "Station Master",
+    "pf_no": "474801144",
+    "hrms_id": "OCFUMI",
+    "mobile_no": "8878557557",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "DIGVIJAY SINGH",
+    "designation": "Station Master",
+    "pf_no": "39529804359",
+    "hrms_id": "DMNRHO",
+    "mobile_no": "9806367849",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "Firoj khan",
+    "designation": "Pointsman",
+    "pf_no": "407420079",
+    "hrms_id": "GBBRFA",
+    "mobile_no": "9406566518",
+    "grade": "A"
+  },
+  {
+    "station": "GDYA",
+    "name": "HEMRAJ NAGLE",
+    "designation": "Pointsman",
+    "pf_no": "474804558",
+    "hrms_id": "XXNXSE",
+    "mobile_no": "9575052858",
+    "grade": "A"
+  },
+  {
+    "station": "GDYA",
+    "name": "Kamlesh kumar meena",
+    "designation": "Station Master",
+    "pf_no": "410764045",
+    "hrms_id": "EQFYWS",
+    "mobile_no": "9694127007",
+    "grade": "A"
+  },
+  {
+    "station": "GDYA",
+    "name": "NAVIN KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "474803580",
+    "hrms_id": "EMRMLM",
+    "mobile_no": "7999550651",
+    "grade": "A"
+  },
+  {
+    "station": "GDYA",
+    "name": "Pramila Patil",
+    "designation": "Pointsman",
+    "pf_no": "474817978",
+    "hrms_id": "NMNEOS",
+    "mobile_no": "9595378537",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "RAMAVATAR",
+    "designation": "Pointsman",
+    "pf_no": "407443833",
+    "hrms_id": "SAJOAJ",
+    "mobile_no": "9893324581",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "RISHI RANJAN RAL",
+    "designation": "Pointsman",
+    "pf_no": "429807276",
+    "hrms_id": "MHNOWY",
+    "mobile_no": "8004395873",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "SACHIDANAND SAHA",
+    "designation": "Pointsman",
+    "pf_no": "474808450",
+    "hrms_id": "YZRFAC",
+    "mobile_no": "9359808966",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "Satyabhama",
+    "designation": "Pointsman",
+    "pf_no": "474832608",
+    "hrms_id": "OWIUCL",
+    "mobile_no": "7499312970",
+    "grade": "B"
+  },
+  {
+    "station": "GDYA",
+    "name": "SINTU KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "429803236",
+    "hrms_id": "BSPZOH",
+    "mobile_no": "9325585415",
+    "grade": "A"
+  },
+  {
+    "station": "GDYA",
+    "name": "SUNIL KUMAR",
+    "designation": "Pointsman",
+    "pf_no": "474811873",
+    "hrms_id": "WKPTLY",
+    "mobile_no": "8789812266",
+    "grade": "A"
+  },
+  {
+    "station": "GDYA",
+    "name": "Umesh kumar",
+    "designation": "Pointsman",
+    "pf_no": "429805266",
+    "hrms_id": "DLMNHP",
+    "mobile_no": "7545850772",
+    "grade": "A"
+  },
+  {
+    "station": "GDYA",
+    "name": "V. K. PRUSTY",
+    "designation": "Station Master",
+    "pf_no": "407443341",
+    "hrms_id": "JMYTOY",
+    "mobile_no": "9406939574",
+    "grade": "A"
+  },
+  {
+    "station": "DHQ",
+    "name": "Abhay Khatarkar",
+    "designation": "Pointsman",
+    "pf_no": "24229804774",
+    "hrms_id": "LLHPXO",
+    "mobile_no": "8965953214",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "ANIL DAYARAM CHOUHAN",
+    "designation": "Pointsman",
+    "pf_no": "429805984",
+    "hrms_id": "XRLWIB",
+    "mobile_no": "9617383281",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Bhojraj Jounjare",
+    "designation": "Pointsman",
+    "pf_no": "429806418",
+    "hrms_id": "FYLKZI",
+    "mobile_no": "7697623969",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "C P MISHRA",
+    "designation": "Station Master",
+    "pf_no": "405960104",
+    "hrms_id": "GFBUUE",
+    "mobile_no": "7972512973",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Chandan Kumar",
+    "designation": "Station Master",
+    "pf_no": "429805252",
+    "hrms_id": "SABOSX",
+    "mobile_no": "9199500754",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "D. S. PARIHAR",
+    "designation": "Station Master",
+    "pf_no": "474801156",
+    "hrms_id": "MTPDRC",
+    "mobile_no": "9893639774",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Hemraj Bhalawi",
+    "designation": "Pointsman",
+    "pf_no": "429808372",
+    "hrms_id": "KJJDDD",
+    "mobile_no": "7489230753",
+    "grade": "C"
+  },
+  {
+    "station": "DHQ",
+    "name": "Krishna Kumar Solanki",
+    "designation": "Pointsman",
+    "pf_no": "474812300",
+    "hrms_id": "QRLBFG",
+    "mobile_no": "7999664751",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Manish ku. Barange",
+    "designation": "Pointsman",
+    "pf_no": "429808230",
+    "hrms_id": "UCYDAQ",
+    "mobile_no": "9584484404",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Mohan Ramrao wagadre",
+    "designation": "Pointsman",
+    "pf_no": "45329804623",
+    "hrms_id": "ZGCURS",
+    "mobile_no": "9827838929",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Nasreen sheikh",
+    "designation": "Pointsman",
+    "pf_no": "429800598",
+    "hrms_id": "LHSOUR",
+    "mobile_no": "8085436131",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Pooja Sahu",
+    "designation": "Pointsman",
+    "pf_no": "429808225",
+    "hrms_id": "OGUEZI",
+    "mobile_no": "9754449670",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Pradeep Soni",
+    "designation": "Station Master",
+    "pf_no": "410763399",
+    "hrms_id": "YXUSDB",
+    "mobile_no": "8817505234",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Pritesh Nagle",
+    "designation": "Station Master",
+    "pf_no": "506014630",
+    "hrms_id": "TFPKRA",
+    "mobile_no": "9981548489",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Rajesh Atulkar",
+    "designation": "Pointsman",
+    "pf_no": "410761305",
+    "hrms_id": "YDTPAR",
+    "mobile_no": "7974648739",
+    "grade": "C"
+  },
+  {
+    "station": "DHQ",
+    "name": "S. Sahani",
+    "designation": "Station Master",
+    "pf_no": "429801660",
+    "hrms_id": "LOMTDP",
+    "mobile_no": "9304767521",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Sanju Kammu Dhurve",
+    "designation": "Pointsman",
+    "pf_no": "410761718",
+    "hrms_id": "EOHDPM",
+    "mobile_no": "7974772810",
+    "grade": "B"
+  },
+  {
+    "station": "DHQ",
+    "name": "Santosh Hemraj Pawar",
+    "designation": "Pointsman",
+    "pf_no": "474808242",
+    "hrms_id": "ZOIBKG",
+    "mobile_no": "8103446210",
+    "grade": "C"
+  },
+  {
+    "station": "DHQ",
+    "name": "SHUBHAM DESHMUKH",
+    "designation": "Station Master",
+    "pf_no": "45229807776",
+    "hrms_id": "TUJUHQ",
+    "mobile_no": "9589841864",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "ASHOK THAKRE",
+    "designation": "Pointsman",
+    "pf_no": "410761858",
+    "hrms_id": "HWAEXB",
+    "mobile_no": "9584091889",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "BABLU DESHMUKH",
+    "designation": "Pointsman",
+    "pf_no": "474808230",
+    "hrms_id": "UYLLYL",
+    "mobile_no": "9754164218",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "C. K. NAGLE",
+    "designation": "Station Master",
+    "pf_no": "414633693",
+    "hrms_id": "UYSXBA",
+    "mobile_no": "9424415004",
+    "grade": "A"
+  },
+  {
+    "station": "MJY",
+    "name": "GABBER SINGH",
+    "designation": "Pointsman",
+    "pf_no": "474807298",
+    "hrms_id": "FBOGAI",
+    "mobile_no": "9617197409",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "KAMAL KISHOR",
+    "designation": "Pointsman",
+    "pf_no": "414761949",
+    "hrms_id": "GGSCCN",
+    "mobile_no": "9425656432",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "M. A QURESHI",
+    "designation": "Station Master",
+    "pf_no": "407443547",
+    "hrms_id": "MDPCLG",
+    "mobile_no": "9806053738",
+    "grade": "A"
+  },
+  {
+    "station": "MJY",
+    "name": "MAHESH SAARTHE",
+    "designation": "Pointsman",
+    "pf_no": "474809842",
+    "hrms_id": "QHFZMA",
+    "mobile_no": "7692812096",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "NITESH MALVIYA",
+    "designation": "Pointsman",
+    "pf_no": "429805210",
+    "hrms_id": "EPJXWN",
+    "mobile_no": "8109644942",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "PANKAJ DESHMUKH",
+    "designation": "Pointsman",
+    "pf_no": "50819140579",
+    "hrms_id": "TCBBKO",
+    "mobile_no": "7723075436",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "PAWAN CHOUKIKAR",
+    "designation": "Pointsman",
+    "pf_no": "474807937",
+    "hrms_id": "RPJRFS",
+    "mobile_no": "8109146837",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "RADHESHYAAM",
+    "designation": "Pointsman",
+    "pf_no": "410762115",
+    "hrms_id": "GARSRK",
+    "mobile_no": "9575520932",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "RADHESHYAAM SONI",
+    "designation": "Station Master",
+    "pf_no": "474807500",
+    "hrms_id": "AHMWGQ",
+    "mobile_no": "6261461750",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "RAJESH PAWAR",
+    "designation": "Pointsman",
+    "pf_no": "45616327716",
+    "hrms_id": "BSWSXF",
+    "mobile_no": "8719820942",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "RAMESH PAWAR",
+    "designation": "Station Master",
+    "pf_no": "474802471",
+    "hrms_id": "FCAYJK",
+    "mobile_no": "8962177559",
+    "grade": "B"
+  },
+  {
+    "station": "MJY",
+    "name": "SANJAY DAWANDE",
+    "designation": "Pointsman",
+    "pf_no": "410761937",
+    "hrms_id": "HDCDZQ",
+    "mobile_no": "7499512990",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "A. K. JHA",
+    "designation": "Station Master",
+    "pf_no": "40734484",
+    "hrms_id": "DZURDG",
+    "mobile_no": "9425636760",
+    "grade": "A"
+  },
+  {
+    "station": "BZU",
+    "name": "ANIL SABLE",
+    "designation": "Pointsman",
+    "pf_no": "407443791",
+    "hrms_id": "JAOAKE",
+    "mobile_no": "9406567170",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "BHUSHAN CHOUDHRI",
+    "designation": "Pointsman",
+    "pf_no": "474812373",
+    "hrms_id": "DOWHEQ",
+    "mobile_no": "8485884034",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "DURGESH RATHORE",
+    "designation": "Pointsman",
+    "pf_no": "474808047",
+    "hrms_id": "WCHESA",
+    "mobile_no": "8839379533",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "NS MEENA",
+    "designation": "Station Master",
+    "pf_no": "474810674",
+    "hrms_id": "ORNSNS",
+    "mobile_no": "8878413139",
+    "grade": "A"
+  },
+  {
+    "station": "BZU",
+    "name": "PARASRAM GADVE",
+    "designation": "Pointsman",
+    "pf_no": "407419788",
+    "hrms_id": "HFYLAI",
+    "mobile_no": "9407596463",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "PARASRAM HEMU",
+    "designation": "Pointsman",
+    "pf_no": "474800024",
+    "hrms_id": "BABKYT",
+    "mobile_no": "9479909981",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "R. K. GUPTA",
+    "designation": "Traffic Inspector",
+    "pf_no": "474807055",
+    "hrms_id": "WDMFKP",
+    "mobile_no": "7389902918",
+    "grade": "A"
+  },
+  {
+    "station": "BZU",
+    "name": "RAJESH SISODIYA",
+    "designation": "Pointsman",
+    "pf_no": "474802756",
+    "hrms_id": "KODTBJ",
+    "mobile_no": "9584631014",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "S. D. ASLE",
+    "designation": "Station Master",
+    "pf_no": "408618987",
+    "hrms_id": "QOUWNS",
+    "mobile_no": "9406521418",
+    "grade": "A"
+  },
+  {
+    "station": "BZU",
+    "name": "S. K. DHOTE",
+    "designation": "Station Master",
+    "pf_no": "400734484",
+    "hrms_id": "PJTLPL",
+    "mobile_no": "9425610220",
+    "grade": "A"
+  },
+  {
+    "station": "BZU",
+    "name": "SMT. SHEETAL YADAV",
+    "designation": "Pointsman",
+    "pf_no": "474810091",
+    "hrms_id": "GIPSKK",
+    "mobile_no": "9340096115",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "SUNIL MOKHDE",
+    "designation": "Pointsman",
+    "pf_no": "407443778",
+    "hrms_id": "CKKHPP",
+    "mobile_no": "9617383536",
+    "grade": "B"
+  },
+  {
+    "station": "BZU",
+    "name": "V.K. WAKDE",
+    "designation": "Station Master",
+    "pf_no": "400555606",
+    "hrms_id": "HZTEDR",
+    "mobile_no": "9424443480",
+    "grade": "A"
+  },
+  {
+    "station": "BZU",
+    "name": "VIJAY BUADE",
+    "designation": "Pointsman",
+    "pf_no": "474805277",
+    "hrms_id": "WHSFEG",
+    "mobile_no": "9993452753",
+    "grade": "B"
+  }
+]
